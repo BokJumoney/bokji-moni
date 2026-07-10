@@ -3,3 +3,4 @@ uvicorn
 pandas
 matplotlib
 openpyxl
+python-multipart
