@@ -27,13 +27,13 @@
 |------|------|
 | **팀명** | 복주머니 |
 | **팀원** | 두강현(팀장), 김영관, 이민호, 허민영 |
-| **프로젝트명** | RAG 기반 저소득층 복지 정보 제공 및 신청 보조 서비스 |
+| **프로젝트명** | AI 에이전트를 활용한 저소득층 복지 정보 제공 및 신청 보조 서비스 |
 
 ### 선정 배경
 
 - 복지 사각지대로 인한 피해 사례 꾸준히 발생
 - 전통적 빈곤층 외 1인 고립가구, 가족 돌봄 청년, 고독사 위험군 등 새로운 형태의 취약계층 증가
-- 맞춤형 서비스 부족
+- 맞춤형으로 복지 정책을 추천하는 서비스 부족
 
 ### 핵심 기능
 
@@ -55,9 +55,9 @@
 
 | 분류 | 기술 |
 |------|------|
-| **AI 모델 / 프레임워크** | LangChain, LangGraph, LLM (ChatGPT 5.5 / Qwen 3.5), pgvector (VectorDB) |
-| **백엔드** | Python 3.13, FastAPI, uvicorn, SQLAlchemy |
-| **데이터베이스** | PostgreSQL, pgvector |
+| **AI 모델 / 프레임워크** | LangChain, LangGraph, LLM (ChatGPT 5.5 / Qwen 3.5) |
+| **백엔드** | Python 3.13, FastAPI |
+| **데이터베이스** | PostgreSQL(RDB), pgvector(VectorDB) |
 | **프론트엔드** | React (Vite) |
 | **협업 / 개발 도구** | Notion, Discord, VSCode, PyCharm, WebStorm, Git & GitHub |
 
