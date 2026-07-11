@@ -3,9 +3,10 @@ from langchain_ollama import ChatOllama
 from pydantic import BaseModel, Field
 
 from app.domain.chat.graph.state import GraphState
+from app.infrastructure.config import settings
 
-OLLAMA_MODEL = "exaone3.5"
-OLLAMA_BASE_URL = "http://localhost:11434"
+OLLAMA_MODEL = settings.LOCAL_MODEL
+OLLAMA_BASE_URL = settings.LOCLAL_LLM_URL
 
 llm = ChatOllama(model=OLLAMA_MODEL, base_url=OLLAMA_BASE_URL)
 
@@ -16,39 +17,6 @@ async def retrieve(state: GraphState) -> dict:
     현재는 벡터스토어가 연결되지 않았으므로 빈 목록을 반환한다.
     """
     return {"documents": []}
-
-
-class GradeDocuments(BaseModel):
-    binary_score: str = Field(description="문서 관련성 평가: yes 또는 no")
-
-
-grade_prompt = ChatPromptTemplate.from_messages([
-    ("system", """
-        당신은 검색된 문서가 사용자 질문과 관련이 있는지 평가하는 평가자입니다.
-        문서가 사용자 질문과 관련된 키워드나 의미를 포함하고 있으면 'yes', 아니면 'no'로 평가하세요.
-    """),
-    ("human", "문서: {document}\n\n질문: {question}"),
-])
-
-structured_llm_grader = llm.with_structured_output(GradeDocuments)
-
-
-async def grade_documents(state: GraphState) -> dict:
-    """
-    검색된 문서들이 사용자 질문과 관련이 있는지 평가하고, 관련된 문서만 필터링한다.
-    """
-    question = state["question"]
-    documents = state.get("documents", [])
-
-    filtered_docs = []
-    for doc in documents:
-        score = await structured_llm_grader.ainvoke(
-            {"document": doc, "question": question}
-        )
-        if score.binary_score == "yes":
-            filtered_docs.append(doc)
-
-    return {"documents": filtered_docs}
 
 
 generate_prompt = ChatPromptTemplate.from_messages([

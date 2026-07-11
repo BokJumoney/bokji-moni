@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     DB_NAME: str = "edudb"
     DB_USER: str = "edu"
     DB_PASSWORD: int = 1234
+    LOCAL_MODEL: str = "exaone3.5"
+    LOCLAL_LLM_URL: str = "http://localhost:11434"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

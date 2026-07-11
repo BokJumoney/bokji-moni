@@ -3,9 +3,10 @@ from langchain_ollama import ChatOllama
 from pydantic import BaseModel, Field
 
 from app.domain.chat.graph.state import GraphState
+from app.infrastructure.config import settings
 
-OLLAMA_MODEL = "exaone3.5"
-OLLAMA_BASE_URL = "http://localhost:11434"
+OLLAMA_MODEL = settings.LOCAL_MODEL
+OLLAMA_BASE_URL = settings.LOCLAL_LLM_URL
 
 
 class RouteQuery(BaseModel):
