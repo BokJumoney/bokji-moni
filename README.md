@@ -111,7 +111,7 @@ bokji-moni/
 │   │
 │   ├── infrastructure/                  # 인프라스트럭처 계층
 │   │   ├── config.py                    # 환경 변수 및 설정 관리
-│   │   ├── db/connection.py             # SQLAlchemy 세션 관리
+│   │   ├── db/connection.py             # SQLModel 세션 관리
 │   │   ├── llm/openai_client.py         # LLM 클라이언트 설정
 │   │   ├── graphs/                      # [계획] LangGraph 노드 및 그래프 정의
 │   │   │   ├── chatbot_graph.py
@@ -141,8 +141,10 @@ bokji-moni/
 ### 설치 및 실행
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-uvicorn app.main:app --reload
+uvicorn main:app --reload
 ```
 
 - API 서버: `http://127.0.0.1:8000`
