@@ -2,17 +2,13 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama import ChatOllama
 from pydantic import BaseModel, Field
 
-from app.domain.chat.graph.state import GraphState
+from app.domain.chat.graph.state import ChatGraphState
 from app.infrastructure.config import settings
 
 OLLAMA_MODEL = settings.LOCAL_MODEL
 OLLAMA_BASE_URL = settings.LOCLAL_LLM_URL
 
-
-class RouteQuery(BaseModel):
-    datasource: str = Field(description="vectorstore 또는 casual_talk")
-
-
+# 프롬프트
 router_system = """
     당신은 사용자의 질문을 분석하여 적절한 처리 노드로 분류하는 라우터입니다.
     다음 두 가지 카테고리 중 하나로만 분류하세요:
@@ -35,6 +31,10 @@ router_system = """
     텍스트 형태로 반환하세요: vectorstore 또는 casual_talk
 """
 
+
+class RouteQuery(BaseModel):
+    datasource: str = Field(description="vectorstore 또는 casual_talk")
+
 route_prompt = ChatPromptTemplate.from_messages([
     ("system", router_system),
     ("human", "{question}"),
@@ -46,7 +46,7 @@ structured_llm_router = llm.with_structured_output(RouteQuery)
 question_router = route_prompt | structured_llm_router
 
 
-async def route_question(state: GraphState) -> str:
+async def route_question(state: ChatGraphState) -> str:
     """
     사용자 질문을 vectorstore 또는 casual_talk으로 라우팅한다.
 

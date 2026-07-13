@@ -1,14 +1,30 @@
-# # SQLModel engine 및 SessionLocal 설정
-# from SQLModel import SQLModel, create_engine, Session
-# from config import settings
+# SQLModel engine 및 SessionLocal 설정
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
+from sqlmodel import SQLModel, Session
 
-# DB_URL = f"postgresql+psycopg2://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
+from app.infrastructure.config import settings
 
-# engine = create_engine(DB_URL, echo=True) # DB 엔진 생성 (커넥션 풀 관리)
+# 엔진 생성 (psycopg 드라이버 사용)
+engine = create_engine(settings.database_url, echo=False)
 
-# def init_db():
-#     SQLModel.metadata.create_all(engine) # 모든 테이블 모델의 테이블을 생성
+SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
-# def get_session():
-#     with Session(engine) as session: # 세션을 열기
-#         return session
+
+def init_db() -> None:
+    """
+    DB 초기화:
+    - pgvector 확장 활성화
+    - SQLModel 메타데이터 기반 테이블 생성
+    """
+    with engine.connect() as conn:
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        conn.commit()
+
+    SQLModel.metadata.create_all(engine)
+
+
+def get_session():
+    """FastAPI 의존성 주입용 세션 제공"""
+    with Session(engine) as session:
+        yield session

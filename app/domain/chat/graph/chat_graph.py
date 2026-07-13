@@ -1,10 +1,10 @@
 from langgraph.graph import START, StateGraph, END
 
-from app.domain.chat.graph.state import GraphState
+from app.domain.chat.graph.state import ChatGraphState
 from app.domain.chat.graph.router import route_question
 from app.domain.chat.graph.nodes import retrieve, generate, casual_talk
 
-workflow = StateGraph(GraphState)
+workflow = StateGraph(ChatGraphState)
 
 workflow.add_node("retrieve", retrieve)
 workflow.add_node("generate", generate)
