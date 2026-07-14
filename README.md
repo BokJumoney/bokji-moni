@@ -83,10 +83,14 @@ bokji-moni/
 │   │   │   └── repository.py
 │   │   │
 │   │   ├── user/                        # 사용자 및 인증 도메인
-│   │   │   ├── api/user_router.py
+│   │   │   ├── api/user_router.py       # 현재 스캐폴드
+│   │   │   ├── api/auth_router.py       # [계획] 회원가입·로그인·로그아웃·세션 확인
 │   │   │   ├── dto/request.py, response.py
-│   │   │   ├── entity/models.py
+│   │   │   ├── entity/models.py         # [계획] User, AuthSession
 │   │   │   ├── service/user_service.py
+│   │   │   ├── service/auth_service.py  # [계획] 세션 인증 서비스
+│   │   │   ├── service/password_service.py # [계획] Argon2id
+│   │   │   ├── dependencies.py          # [계획] get_current_user
 │   │   │   └── repository.py
 │   │   │
 │   │   ├── welfare/                     # 복지 정보 도메인
@@ -144,7 +148,7 @@ bokji-moni/
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
 
 - API 서버: `http://127.0.0.1:8000`
@@ -173,13 +177,17 @@ python -m app.analysis.regional_analysis
 
 #### 인증 및 권한 관리
 
-서버 기반 세션 인증을 사용합니다. 로그인 성공 시 세션 ID가 발급되며, 이후 요청은 쿠키를 통해 세션이 자동으로 인증됩니다.
+인증 기능은 **PostgreSQL 기반 서버 세션 방식으로 구현할 예정**입니다. 로그인에 성공하면 서버가 `auth_sessions` 테이블에 세션을 만들고, 브라우저에는 무작위 세션 토큰만 `HttpOnly` 쿠키로 전달합니다. DB에는 원본 토큰이 아니라 SHA-256 해시를 저장하며 JWT access/refresh token은 사용하지 않습니다.
+
+비밀번호는 Argon2id로 해시하고, 보호된 API는 공통 `get_current_user` dependency를 통해 로그인 사용자를 확인합니다. 현재 사용자 도메인은 아직 스캐폴드 상태이므로 아래 권한 표와 인증 API는 목표 설계입니다.
 
 | 권한 | 접근 가능 API | 설명 |
 |------|---------------|------|
-| 비인증 | `/auth/*` | 회원가입, 로그인 |
+| 비인증 | `/auth/signup`, `/auth/login` | 회원가입, 로그인 |
 | 사용자 세션 | `/chat/*`, `/users/*`, `/welfare/*`, `/notifications/*` | 챗봇, 프로필, 복지 조회, 알림 조회 |
 | 관리자 세션 | `/admin/*` + 사용자 권한 전체 | 복지 자료 CRUD, 사용자 관리, 대시보드 |
+
+> 인증 세션과 채팅 세션은 서로 다릅니다. 인증 세션은 로그인 상태를 나타내는 쿠키/DB 레코드이고, 채팅 API의 `session_id`는 대화방 식별자입니다. 두 값을 서로 재사용하지 않습니다.
 
 #### MCP 서버 연동
 
@@ -290,7 +298,9 @@ APScheduler 기반 백그라운드 스케줄러가 매일 09:00에 알림 그래
 
 ### 데이터베이스 설계
 
-PostgreSQL + pgvector 기반의 데이터베이스를 사용합니다.
+PostgreSQL + pgvector 기반의 데이터베이스를 사용합니다. 아래는 목표 스키마이며, 사용자·인증 관련 테이블은 아직 구현 전입니다.
+
+세션 인증을 위해 `users (1) → (N) auth_sessions` 관계를 추가합니다. `auth_sessions`에는 원본 쿠키 토큰을 저장하지 않고 토큰 해시, 사용자 ID, idle/absolute 만료 시각, 폐기 시각만 저장합니다.
 
 #### ER 다이어그램
 
@@ -346,7 +356,8 @@ PostgreSQL + pgvector 기반의 데이터베이스를 사용합니다.
 
 | 테이블 | 설명 |
 |--------|------|
-| `users` | 사용자 계정 정보 (이메일, 비밀번호 해시, 이름, 권한) |
+| `users` *(계획)* | 사용자 계정 정보 (이메일, Argon2id 비밀번호 해시, 이름, 권한, 활성 상태) |
+| `auth_sessions` *(계획)* | 서버 로그인 세션 (토큰 해시, 사용자 FK, idle/absolute 만료, 폐기 시각) |
 | `user_welfare_info` | 사용자 복지 관련 정보 (소득, 나이, 가구원 수, 가구 유형, 거주 지역, 장애 정보, 재산, 직업 상태) |
 | `conversations` | 대화 세션 정보 (세션 ID, 제목, 생성/수정 시간) |
 | `messages` | 대화 메시지 이력 (역할, 내용, 의도 분류 결과) |
@@ -358,15 +369,17 @@ PostgreSQL + pgvector 기반의 데이터베이스를 사용합니다.
 
 ## API 명세
 
+> 아래는 목표 API 구조입니다. 현재 코드에 등록된 라우터는 `/api/v1/chat`뿐이며, 인증·사용자·알림·관리자 API는 구현 상태 표를 기준으로 확인합니다.
+
 ### API 전체 구조
 
 ```
 /api/v1/
 ├── auth/                          인증
 │   ├── POST   /signup             사용자 회원가입
-│   ├── POST   /login             사용자 로그인 (세션 발급)
-│   ├── POST   /logout            로그아웃 (세션 만료)
-│   └── POST   /admin/login       관리자 로그인
+│   ├── POST   /login              사용자 로그인 (서버 세션 발급)
+│   ├── POST   /logout             현재 인증 세션 폐기
+│   └── GET    /session            로그인 사용자·세션 상태 조회
 │
 ├── chat/                          챗봇
 │   ├── POST   /message            챗봇 메시지 전송 (챗봇 그래프 실행)
@@ -404,12 +417,16 @@ PostgreSQL + pgvector 기반의 데이터베이스를 사용합니다.
 
 #### 인증 API (`/api/v1/auth`)
 
+> 아래 인증 API는 구현 예정입니다. 세션 토큰은 JSON 응답에 포함하지 않고 `HttpOnly` 쿠키로만 전달합니다.
+
 | 메서드 | 경로 | 설명 | 인증 |
 |--------|------|------|------|
 | POST | `/signup` | 사용자 회원가입 | 없음 |
-| POST | `/login` | 사용자 로그인 (세션 발급) | 없음 |
-| POST | `/logout` | 로그아웃 (세션 만료) | 세션 |
-| POST | `/admin/login` | 관리자 로그인 | 없음 |
+| POST | `/login` | 사용자 로그인 및 DB 세션 발급 | 없음 |
+| POST | `/logout` | 현재 세션 폐기 및 쿠키 삭제 | 선택적 세션 |
+| GET | `/session` | 현재 로그인 사용자와 세션 만료 정보 조회 | 세션 |
+
+JWT access token, refresh token 및 `/refresh` 엔드포인트는 사용하지 않습니다. 관리자도 별도의 토큰 API가 아니라 동일한 세션 인증 후 `role`을 검사하는 방식으로 확장합니다.
 
 #### 챗봇 API (`/api/v1/chat`)
 
@@ -426,12 +443,12 @@ PostgreSQL + pgvector 기반의 데이터베이스를 사용합니다.
 # 요청
 class ChatMessageRequest(BaseModel):
     message: str                      # 사용자 메시지
-    session_id: Optional[str]         # 세션 ID (없으면 새 세션 생성)
+    session_id: Optional[str]         # 채팅 세션 ID (인증 세션과 별개, 없으면 새 채팅 생성)
 
 # 응답
 class ChatMessageResponse(BaseModel):
     response: str                     # AI 응답 텍스트
-    session_id: str                   # 세션 ID
+    session_id: str                   # 채팅 세션 ID
     intent: str                       # 분류된 의도
     user_info_updated: bool           # 사용자 정보 갱신 여부
     needs_followup: bool              # 후속 대화 필요 여부
@@ -479,21 +496,23 @@ class ChatMessageResponse(BaseModel):
 
 ## 현재 구현 상태
 
-> 프로젝트는 기획·설계 완료 단계이며, 코드는 초기 세팅 상태입니다.
+> 아래 표는 현재 저장소 코드 기준입니다. 설계된 기능과 구현 완료 기능을 구분합니다.
 
 | 도메인 | 상태 | 비고 |
 |--------|------|------|
-| **chat** | 구현됨 (초기) | Ollama 로컬 모델(`exaone3.5`) 기반 챗봇. 인메모리 세션 저장소 사용 (재시작 시 초기화). LangGraph 미연동 |
-| **user** | 스캐폴드 | 라우터/서비스 비어 있음. `main.py`에 등록되지 않음 |
-| **welfare** | 스캐폴드 | 라우터/서비스 비어 있음. `main.py`에 등록되지 않음 |
+| **chat** | 구현됨 (초기) | LangGraph로 복지 검색과 일반 대화 분기. 대화 세션은 인메모리 저장소를 사용하여 재시작 시 초기화됨 |
+| **user / auth** | 구현 전 | 라우터·DTO·엔티티·서비스·repository가 비어 있고 `main.py`에 등록되지 않음. PostgreSQL 서버 세션 방식으로 구현 예정 |
+| **welfare** | 일부 구현 | 정책 SQLModel과 PGVector/BM25 검색 기반은 있으나 API router/service는 스캐폴드 상태 |
 | **notification** | 미구현 | 설계만 존재 |
 | **admin** | 미구현 | 설계만 존재 |
-| **infrastructure** | 스캐폴드 | `config.py`, `db/connection.py`, `llm/openai_client.py` — 내용 없음 |
-| **DB 연동** | 없음 | PostgreSQL 미연동, 인메모리 dict 사용 |
+| **infrastructure** | 일부 구현 | Pydantic Settings, PostgreSQL/SQLModel 연결, PGVector 및 하이브리드 retriever 구현 |
+| **DB 연동** | 일부 구현 | 앱 시작 시 PostgreSQL과 pgvector를 초기화함. 사용자·인증·대화 영속화 모델은 아직 없음 |
 | **분석 스크립트** | 구현됨 | `app/analysis/regional_analysis.py` (독립 실행 스크립트) |
 
 ### 현재 제약사항
 
 - Ollama가 로컬에서 실행되지 않으면 `/api/v1/chat/message`가 "AI 모델 오류" 문자열을 반환합니다.
-- Ollama URL과 모델명은 `app/domain/chat/service/chat_service.py`에 하드코딩되어 있으며, `.env` 또는 설정 모듈이 아직 구성되지 않았습니다.
+- 인증 기능이 아직 없어 채팅 API는 임시 `test_user_id`를 사용합니다. 인증 구현 후 `get_current_user`에서 받은 실제 사용자 ID로 교체해야 합니다.
+- Ollama URL과 모델명, PostgreSQL, 임베딩 설정은 `app/infrastructure/config.py`에서 관리하며 `.env`로 재정의할 수 있습니다.
+- 서버 시작에는 PostgreSQL/pgvector와 벡터 적재에 필요한 OpenAI 임베딩 설정이 필요합니다.
 - 테스트, 린트, 타입체크가 구성되어 있지 않습니다.
