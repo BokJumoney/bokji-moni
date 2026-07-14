@@ -1,15 +1,13 @@
 """
-사용자·세션 리포지토리 (SQLModel 기반).
+사용자 리포지토리 (SQLModel 기반).
 
-회원가입 구현을 위해 사용자 생성·이메일 조회 메서드를 포함한다.
-세션 관련 메서드는 로그인 단계에서 추가한다.
+- UserRepository: 사용자 생성·이메일 조회
 """
 from typing import Optional
 
 from sqlmodel import Session, select
 
 from app.domain.user.entity.models import User
-
 
 class UserRepository:
     """users 테이블 DB 접근."""
