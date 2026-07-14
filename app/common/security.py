@@ -35,3 +35,50 @@ def hash_session_token(token: str) -> str:
     비밀번호에는 절대 같은 방식을 사용하지 않는다.
     """
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def build_session_cookie(token: str) -> dict:
+    """
+    설정에 따라 세션 쿠키 옵션 dict를 반환한다.
+
+    - 개발: `bokji_auth`
+    - 운영: `__Host-bokji_auth` (Domain 미설정, host-only)
+    - response.set_cookie(**return_value) 로 사용한다.
+    """
+    from app.infrastructure.config import settings as _settings
+
+    name = _settings.SESSION_COOKIE_NAME
+    if _settings.APP_ENV == "production":
+        name = f"__Host-{name}"
+
+    return {
+        "key": name,
+        "value": token,
+        "httponly": True,
+        "secure": _settings.SESSION_COOKIE_SECURE,
+        "samesite": _settings.SESSION_COOKIE_SAMESITE,
+        "path": "/",
+    }
+
+
+def build_session_delete_cookie() -> dict:
+    """
+    세션 쿠키 삭제 옵션 dict를 반환한다.
+
+    로그아웃 시 동일 속성으로 빈 값·만료 쿠키를 설정할 때 사용한다.
+    """
+    from app.infrastructure.config import settings as _settings
+
+    name = _settings.SESSION_COOKIE_NAME
+    if _settings.APP_ENV == "production":
+        name = f"__Host-{name}"
+
+    return {
+        "key": name,
+        "value": "",
+        "httponly": True,
+        "secure": _settings.SESSION_COOKIE_SECURE,
+        "samesite": _settings.SESSION_COOKIE_SAMESITE,
+        "path": "/",
+        "max_age": 0,
+    }
