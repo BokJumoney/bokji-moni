@@ -1,7 +1,14 @@
 # 환경 변수 (Pydantic Settings)
+from typing import Literal
+
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class Settings(BaseSettings):
+    # 실행 환경
+    APP_ENV: Literal["development", "test", "production"] = "development"
+
     # PostgreSQL
     DB_HOST: str = "localhost"
     DB_PORT: int = 5432
@@ -25,7 +32,38 @@ class Settings(BaseSettings):
     CHUNK_SIZE: int = 1000
     CHUNK_OVERLAP: int = 150
 
+    # 인증 세션 / 쿠키
+    SESSION_COOKIE_NAME: str = "bokji_auth"
+    SESSION_COOKIE_SECURE: bool = False
+    SESSION_COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"
+    SESSION_IDLE_MINUTES: int = 30
+    SESSION_ABSOLUTE_HOURS: int = 24
+    SESSION_TOUCH_INTERVAL_SECONDS: int = 300
+
+    # CORS 허용 origin
+    ALLOWED_ORIGINS: list[str] = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+    ]
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+
+    @model_validator(mode="after")
+    def _validate_auth_settings(self) -> "Settings":
+        # 운영 환경에서는 Secure 쿠키가 필수
+        if self.APP_ENV == "production" and not self.SESSION_COOKIE_SECURE:
+            raise ValueError(
+                "APP_ENV=production 일 때 SESSION_COOKIE_SECURE=true 여야 합니다."
+            )
+        # SameSite=None 은 Secure 쿠키에서만 허용
+        if (
+            self.SESSION_COOKIE_SAMESITE == "none"
+            and not self.SESSION_COOKIE_SECURE
+        ):
+            raise ValueError(
+                "SESSION_COOKIE_SAMESITE='none' 일 때 SESSION_COOKIE_SECURE=true 여야 합니다."
+            )
+        return self
 
     @property
     def database_url(self) -> str:
@@ -33,5 +71,6 @@ class Settings(BaseSettings):
             f"postgresql+psycopg://{self.DB_USER}:{self.DB_PASSWORD}"
             f"@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
         )
+
 
 settings = Settings()
