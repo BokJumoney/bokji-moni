@@ -1,0 +1,267 @@
+{
+  "forms": [
+    {
+      "form_name": "스포츠강좌이용권 신청서",
+      "aliases": [],
+      "description": "※ 유의사항을 읽은 뒤 작성을 부탁드리며, [ ]에는 해당되는 곳에 \"√\" 표시를 합니다.",
+      "sections": [
+        {
+          "title": "신청자 1",
+          "description": "",
+          "fields": [
+            {
+              "name": "접수번호",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "접수일",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "처리기간",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "주민등록번호 (외국인등록번호)",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "성명",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "회원구분",
+              "type": "checkbox",
+              "required": false,
+              "condition": "",
+              "options": [
+                "기초생활수급",
+                "차상위 확인서발급대상",
+                "차상위 장애인",
+                "차상위 자활근로",
+                "차상위 본인부담경감",
+                "법정 한부모지원가구",
+                "폴케어(pol-care)"
+              ]
+            },
+            {
+              "name": "휴대전화번호",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "홈페이지 ID",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "이메일",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "기타사항",
+              "type": "checkbox",
+              "required": false,
+              "condition": "",
+              "options": [
+                "장애여부",
+                "다문화가정",
+                "다자녀가정",
+                "없음"
+              ]
+            },
+            {
+              "name": "주 소",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            }
+          ]
+        },
+        {
+          "title": "신청자 2",
+          "description": "",
+          "fields": [
+            {
+              "name": "주민등록번호 (외국인등록번호)",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "성명",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "회원구분",
+              "type": "checkbox",
+              "required": false,
+              "condition": "",
+              "options": [
+                "기초생활수급",
+                "차상위 확인서발급대상",
+                "차상위 장애인",
+                "차상위 자활근로",
+                "차상위 본인부담경감",
+                "법정 한부모지원가구",
+                "폴케어(pol-care)"
+              ]
+            },
+            {
+              "name": "휴대전화번호",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "홈페이지 ID",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "이메일",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "기타사항",
+              "type": "checkbox",
+              "required": false,
+              "condition": "",
+              "options": [
+                "장애여부",
+                "다문화가정",
+                "다자녀가정",
+                "없음"
+              ]
+            },
+            {
+              "name": "주 소",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            }
+          ]
+        },
+        {
+          "title": "세대주",
+          "description": "",
+          "fields": [
+            {
+              "name": "주민등록번호 (외국인등록번호)",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "성명",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            }
+          ]
+        },
+        {
+          "title": "카드 발급자",
+          "description": "",
+          "fields": [
+            {
+              "name": "동일 정보선택",
+              "type": "checkbox",
+              "required": false,
+              "condition": "",
+              "options": [
+                "기존 카드발급자",
+                "세대주",
+                "신청자",
+                "기타"
+              ]
+            },
+            {
+              "name": "주민등록번호",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "성명",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "카드구분",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": [
+                "체크카드"
+              ]
+            },
+            {
+              "name": "휴대전화번호",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "신청자와의 관계",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "주 소",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            }
+          ]
+        }
+      ],
+      "file": {
+        "path": "data/forms/스포츠강좌이용권 신청서.hwpx"
+      }
+    }
+  ]
+}
