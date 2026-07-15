@@ -43,6 +43,8 @@ class Settings(BaseSettings):
     SESSION_ABSOLUTE_HOURS: int = 24
     SESSION_TOUCH_INTERVAL_SECONDS: int = 300
 
+    openai_api_key: str
+
     # CORS 허용 origin
     ALLOWED_ORIGINS: list[str] = [
         "http://localhost:3000",
