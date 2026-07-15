@@ -114,11 +114,11 @@ class ConversationRepository:
         )
         self.session.add(message)
 
-        from app.domain.chat.utils import normalize_preview
+        # from app.domain.chat.utils import normalize_preview
 
         # atomic increment + summary 갱신
         conversation.message_count = conversation.message_count + 1
-        conversation.last_message_preview = normalize_preview(content)
+        conversation.last_message_preview = content[:200]
         conversation.last_message_at = now
         conversation.updated_at = now
         self.session.add(conversation)

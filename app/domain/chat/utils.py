@@ -35,12 +35,12 @@ def normalize_title(first_message: str) -> str:
     return trimmed[:_TITLE_MAX].rstrip() + "…"
 
 
-def normalize_preview(content: str) -> str:
-    """메시지 본문을 목록 미리보기(200자 이내)로 정규화한다."""
-    trimmed = _WS_RE.sub(" ", content.strip())
-    if len(trimmed) <= _PREVIEW_MAX:
-        return trimmed
-    return trimmed[:_PREVIEW_MAX].rstrip() + "…"
+# def normalize_preview(content: str) -> str:
+#     """메시지 본문을 목록 미리보기(200자 이내)로 정규화한다."""
+#     trimmed = _WS_RE.sub(" ", content.strip())
+#     if len(trimmed) <= _PREVIEW_MAX:
+#         return trimmed
+#     return trimmed[:_PREVIEW_MAX].rstrip() + "…"
 
 
 def encode_cursor(last_message_at: datetime, conversation_id: uuid.UUID) -> str:
