@@ -8,6 +8,24 @@ from fastapi import HTTPException, UploadFile, status
 class AdminFileService:
     def __init__(self) -> None:
         self.upload_dir = Path(__file__).resolve().parents[4] / "storage" / "admin_files"
+        self.md_dir = Path(__file__).resolve().parents[4] / "storage" / "output" / "md"
+        self.txt_dir = Path(__file__).resolve().parents[4] / "storage" / "output" / "txt"
+
+    def get_stored_path(self, stored_filename: str) :
+            return f"{self.upload_dir}/{stored_filename}" 
+
+    def get_upload_path(self):
+        return self.upload_dir
+    
+    def get_md_path(self):
+        if not self.md_dir.exists():
+            self.md_dir.mkdir()
+        return self.md_dir
+    
+    def get_txt_path(self):
+        if not self.txt_dir.exists():
+            self.txt_dir.mkdir()
+        return self.txt_dir
 
     async def save_file(self, file: UploadFile) -> dict:
         if not file.filename:
@@ -17,6 +35,8 @@ class AdminFileService:
             )
 
         self.upload_dir.mkdir(parents=True, exist_ok=True)
+        self.md_dir.mkdir(parents=True, exist_ok=True)
+        self.txt_dir.mkdir(parents=True, exist_ok=True)
 
         original_name = Path(file.filename).name
         extension = Path(original_name).suffix

@@ -1,7 +1,10 @@
 from fastapi import APIRouter, Depends, File, UploadFile, status
 
 from app.domain.admin.dto.response import FileDeleteResponse, FileUploadResponse
-from app.domain.admin.service.admin_service import AdminFileService
+from app.domain.admin.service.admin_file_service import AdminFileService
+from app.domain.admin.service.extract_data_service import ExtractDataService
+from app.domain.admin.service.policy_embedding_service import PolicyEmbeddingService
+from app.domain.admin.service.cmd_exec_service import CmdExecService
 
 router = APIRouter(
     prefix="/admin",
@@ -12,6 +15,14 @@ router = APIRouter(
 def get_admin_file_service() -> AdminFileService:
     return AdminFileService()
 
+def get_extract_data_service() -> ExtractDataService:
+    return ExtractDataService(get_admin_file_service())
+
+def get_policy_embedding_service() -> PolicyEmbeddingService:
+    return PolicyEmbeddingService()
+
+def get_cmd_exec_service() -> CmdExecService:
+    return CmdExecService()
 
 @router.post(
     "/file",
@@ -20,9 +31,29 @@ def get_admin_file_service() -> AdminFileService:
 )
 async def upload_file(
     file: UploadFile = File(...),
-    service: AdminFileService = Depends(get_admin_file_service),
+    file_service: AdminFileService = Depends(get_admin_file_service),
+    extract_data_service: ExtractDataService = Depends(get_extract_data_service),
+    policy_embedding_service: PolicyEmbeddingService = Depends(get_policy_embedding_service),
+    cmd_exec_service: CmdExecService = Depends(get_cmd_exec_service)
 ) -> FileUploadResponse:
-    return await service.save_file(file)
+    store_result = await file_service.save_file(file)
+    stored_path = store_result["storedFilename"]
+    absolute_file_path = file_service.get_stored_path(stored_path)
+    file_name, extension = stored_path.split(".")
+
+    await cmd_exec_service.run_command([
+        "npx.cmd", 
+        "-y", 
+        "kordoc", 
+        str(absolute_file_path),
+        "-o",
+        f"{file_service.get_md_path()}/{file_name}.md",
+    ])
+    if extension == "pdf":
+        await extract_data_service.parse_md_to_txt(f"{file_service.get_md_path()}/{file_name}.md", f"{file_service.get_txt_path()}/{file_name}.txt")
+        await policy_embedding_service.txtfile_embedding(f"{file_service.get_txt_path()}/{file_name}.txt")
+
+    return store_result
 
 
 @router.delete(
