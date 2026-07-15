@@ -6,14 +6,16 @@ AuthSession 모델은 로그인 단계에서 사용되지만 스키마를 함께
 create_all() 시 테이블이 생성되도록 한다.
 """
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 
 from sqlmodel import Field, SQLModel
 
+from app.common.timezone import now_kst
+
 
 def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return now_kst()
 
 
 class User(SQLModel, table=True):

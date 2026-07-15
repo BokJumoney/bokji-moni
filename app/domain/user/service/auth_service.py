@@ -18,7 +18,7 @@
 """
 import logging
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 from sqlmodel import Session
 from sqlalchemy.exc import IntegrityError
@@ -34,6 +34,7 @@ from app.common.security import (
     hash_session_token,
     normalize_email,
 )
+from app.common.timezone import now_kst
 from app.domain.user.dto.request import LoginRequest, SignupRequest
 from app.domain.user.dto.response import AuthUserResponse, LoginResponse
 from app.domain.user.entity.models import AuthSession, User
@@ -91,7 +92,7 @@ class AuthService:
             raise EmailAlreadyExistsError()
 
         password_hash = password_service.hash_password(request.password)
-        now = datetime.now(timezone.utc)
+        now = now_kst()
         user = User(
             email=email,
             password_hash=password_hash,
@@ -146,14 +147,14 @@ class AuthService:
 
         if updated_hash is not None:
             user.password_hash = updated_hash
-            user.updated_at = datetime.now(timezone.utc)
+            user.updated_at = now_kst()
             self.session.add(user)
             self.session.commit()
 
         token = generate_session_token()
         token_hash = hash_session_token(token)
 
-        now = datetime.now(timezone.utc)
+        now = now_kst()
         auth_session = AuthSession(
             token_hash=token_hash,
             user_id=user.id,
