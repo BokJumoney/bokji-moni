@@ -5,13 +5,14 @@ TestClient 로 실제 HTTP 흐름을 검증한다. 인증 쿠키를 직접 세�
 로그인 절차를 우회한다 (인증 자체는 별도 테스트 영역).
 """
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, delete, select
 
 from app.common.security import generate_session_token, hash_session_token
+from app.common.timezone import now_kst
 from app.domain.chat.entity.models import Conversation
 from app.domain.chat.repository import ConversationRepository
 from app.domain.chat.utils import normalize_title
@@ -45,7 +46,7 @@ def authed():
         s.refresh(u)
 
         token = generate_session_token()
-        now = datetime.now(timezone.utc)
+        now = now_kst()
         asess = AuthSession(
             token_hash=hash_session_token(token),
             user_id=u.id,
@@ -163,7 +164,7 @@ def test_expired_session_401(client, authed):
         a = s.exec(
             select(AuthSession).where(AuthSession.user_id == authed["user_id"])
         ).first()
-        a.idle_expires_at = datetime.now(timezone.utc) - timedelta(minutes=1)
+        a.idle_expires_at = now_kst() - timedelta(minutes=1)
         s.add(a)
         s.commit()
     r = client.get("/api/v1/chat/sessions", cookies=authed["cookie"])

@@ -8,11 +8,12 @@
 """
 import base64
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 
 import pytest
 
 from app.common.exceptions import InvalidCursorError
+from app.common.timezone import KST
 from app.domain.chat.utils import (
     decode_cursor,
     encode_cursor,
@@ -68,14 +69,13 @@ class TestNormalizePreview:
 
 class TestCursorEncodeDecode:
     def test_round_trip_aware(self):
-        now = datetime(2026, 7, 14, 1, 24, 10, tzinfo=timezone.utc)
+        now = datetime(2026, 7, 14, 1, 24, 10, tzinfo=KST)
         cid = uuid.uuid4()
         ts2, cid2 = decode_cursor(encode_cursor(now, cid))
         assert cid2 == cid
-        # UTC 변환으로 동일 시각
-        assert ts2.astimezone(timezone.utc).replace(microsecond=0) == now.replace(
-            microsecond=0
-        )
+        # decode_cursor 는 naive KST 를 반환한다
+        assert ts2.tzinfo is None
+        assert ts2.replace(microsecond=0) == now.replace(tzinfo=None, microsecond=0)
 
     def test_round_trip_naive(self):
         now = datetime(2026, 7, 14, 1, 24, 10)  # naive

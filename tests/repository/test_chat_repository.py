@@ -93,7 +93,9 @@ def test_list_uuid_tiebreaker(repo_and_user):
     c2 = repo.create_conversation(user.id, "B")
     import datetime as _dt
 
-    now = _dt.datetime.now(_dt.timezone.utc)
+    from app.common.timezone import now_kst
+
+    now = now_kst()
     repo.add_message(c1, "user", "x", now=now)
     repo.add_message(c2, "user", "y", now=now)
     rows = repo.list_conversations(user.id, 10)
