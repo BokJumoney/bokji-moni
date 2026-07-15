@@ -23,6 +23,10 @@ async def retrieve(state: ChatGraphState) -> dict:
 
     ensemble_retriever = get_ensemble_retriever()
     documents = ensemble_retriever.invoke(question)
+
+    for doc in documents:
+        print(f" 검색 결과: {doc.metadata['service_name']}")
+
     return {"documents": documents, "question": question}
 
 
