@@ -13,12 +13,13 @@ DB query 자체에 소유권 조건을 넣는다.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import text
 from sqlmodel import Session, select
 
+from app.common.timezone import now_kst
 from app.domain.chat.entity.models import Conversation, Message
 
 
@@ -35,7 +36,7 @@ class ConversationRepository:
         title: str,
         now: Optional[datetime] = None,
     ) -> Conversation:
-        now = now or datetime.now(timezone.utc)
+        now = now or now_kst()
         conversation = Conversation(
             user_id=user_id,
             title=title,
@@ -103,7 +104,7 @@ class ConversationRepository:
         now: Optional[datetime] = None,
     ) -> Message:
         """메시지 저장 + conversation summary 갱신을 한 transaction으로 수행."""
-        now = now or datetime.now(timezone.utc)
+        now = now or now_kst()
         message = Message(
             conversation_id=conversation.id,
             role=role,

@@ -11,15 +11,17 @@
 - conversation 삭제 시 message cascade delete.
 """
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import CheckConstraint, Index
 from sqlmodel import Field, SQLModel
 
+from app.common.timezone import now_kst
+
 
 def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return now_kst()
 
 
 class Conversation(SQLModel, table=True):
