@@ -57,3 +57,4 @@ def home():
 @app.get("/db")
 def get_db_info():
     return {"message": "DB 데이터"}
+
