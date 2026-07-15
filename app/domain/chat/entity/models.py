@@ -33,7 +33,7 @@ class Conversation(SQLModel, table=True):
     user_id: uuid.UUID = Field(foreign_key="users.id", nullable=False, index=True)
     title: str = Field(max_length=80, nullable=False)
     last_message_preview: str = Field(
-        max_length=200, nullable=False, default=""
+        nullable=False, default=""
     )
     message_count: int = Field(default=0, nullable=False)
     created_at: datetime = Field(default_factory=_utcnow, nullable=False)
