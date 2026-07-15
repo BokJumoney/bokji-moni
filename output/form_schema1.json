@@ -1,0 +1,595 @@
+{
+  "forms": [
+    {
+      "form_name": "자산형성지원사업 참여(변경) 신청서",
+      "aliases": [],
+      "description": "※ 처리기간 - 희망저축I 30일 - 희망저축II 70일 - 청년내일 100일",
+      "sections": [
+        {
+          "title": "기본 정보",
+          "description": "",
+          "fields": [
+            {
+              "name": "가입연도",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "가입기수",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "가입은행",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "신청유형",
+              "type": "checkbox",
+              "required": true,
+              "condition": "",
+              "options": [
+                "희망저축계좌Ⅰ(생계･의료급여 수급 가구)",
+                "희망저축계좌Ⅱ(주거･교육급여 수급 및 차상위 가구)",
+                "청년내일저축계좌(기준 중위소득 50% 이하 가구의 청년)"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "신청자 정보",
+          "description": "",
+          "fields": [
+            {
+              "name": "성 명",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "주민등록번호",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "전화번호",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "휴대전화",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "주 소",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "전자우편",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "비상연락",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "신청자와의 관계",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "직 업",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "근무지명",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "근무기간",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "근무형태",
+              "type": "checkbox",
+              "required": false,
+              "condition": "",
+              "options": [
+                "상용직(정규직)",
+                "임시직(계약직, 기간제)",
+                "일용직",
+                "아르바이트(시간제근로자)",
+                "자영업자"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "가입자 정보",
+          "description": "※ 신청자와 가입자가 다를 경우 기재(청년내일저축계좌는 신청자와 가입자가 동일해야 합니다.)",
+          "fields": [
+            {
+              "name": "성 명",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "주민등록번호",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "신청자와의 관계",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "전화번호",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "휴대전화",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            }
+          ]
+        },
+        {
+          "title": "적립 및 기타정보",
+          "description": "",
+          "fields": [
+            {
+              "name": "월별 저축액",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "약정금액",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "저축액 사용계획",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "저축목적",
+              "type": "checkbox",
+              "required": false,
+              "condition": "",
+              "options": [
+                "주택구입･임대",
+                "본인･자녀의 고등교육･기술훈련",
+                "창업･운영자금",
+                "의료비",
+                "개인자산형성(ISA･일반적금)",
+                "국민연금･고용보험･건강보험 본인부담금",
+                "가구원 돌봄비용",
+                "결혼자금",
+                "그 밖에 자립･자활"
+              ]
+            },
+            {
+              "name": "향후 자립･ 자활계획",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "유사 자산형성사업 참여 여부",
+              "type": "checkbox",
+              "required": false,
+              "condition": "",
+              "options": [
+                "미참여",
+                "참여(사업명: , 참여기간: , 수령액: )"
+              ]
+            },
+            {
+              "name": "희망･내일키움통장 등 재가입 여부",
+              "type": "checkbox",
+              "required": false,
+              "condition": "",
+              "options": [
+                "최초",
+                "재가입(사업명: , 참여기간: )"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "서명",
+          "description": "위와 같이 신청합니다. 년월일 신청인 (서명 또는 인) ※ 신청자 본인의 서명 또는 도장 날인 필 특별자치시장･특별자치도지사･시장･군수･구청장 귀하",
+          "fields": []
+        }
+      ],
+      "file": {
+        "path": "data/forms/희망저축계좌 및 청년내일저축계좌.hwpx"
+      }
+    },
+    {
+      "form_name": "해지 자산형성지원사업 신청서",
+      "aliases": [],
+      "description": "해지철회",
+      "sections": [
+        {
+          "title": "통장정보",
+          "description": "",
+          "fields": [
+            {
+              "name": "통장종류",
+              "type": "checkbox",
+              "required": true,
+              "condition": "",
+              "options": [
+                "희망저축계좌Ⅰ(생계･의료급여 수급자)",
+                "희망저축계좌Ⅱ(주거･교육급여 수급자 및 차상위자)",
+                "청년내일저축계좌(기준 중위소득 100% 이하 가구의 청년)"
+              ]
+            },
+            {
+              "name": "성명",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "생년월일",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "은행계좌번호(본인적립금)",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "주소",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "전화번호",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "해지유형",
+              "type": "checkbox",
+              "required": true,
+              "condition": "",
+              "options": [
+                "희망저축계좌Ⅰ: 지급",
+                "희망저축계좌Ⅰ: 일부지급(만기성공)",
+                "희망저축계좌Ⅰ: 환수",
+                "희망저축계좌Ⅱ: 지급",
+                "희망저축계좌Ⅱ: 환수",
+                "청년내일저축계좌: 지급",
+                "청년내일저축계좌: 환수"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "신청인 정보",
+          "description": "",
+          "fields": [
+            {
+              "name": "신청인 서명 또는 도장",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "신청일",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            }
+          ]
+        }
+      ],
+      "file": {
+        "path": "data/forms/희망저축계좌 및 청년내일저축계좌.hwpx"
+      }
+    },
+    {
+      "form_name": "근로활동 및 소득신고서",
+      "aliases": [],
+      "description": "",
+      "sections": [
+        {
+          "title": "수급(권)자 정보",
+          "description": "",
+          "fields": [
+            {
+              "name": "성 명",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "생년월일",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "주 소",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            }
+          ]
+        },
+        {
+          "title": "취업상태",
+          "description": "",
+          "fields": [
+            {
+              "name": "유 형",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": [
+                "상시근로자",
+                "임시･일용직",
+                "자영업",
+                "기타"
+              ]
+            },
+            {
+              "name": "직장(사업장)명",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "직장(사업장)주소",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "전화",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            }
+          ]
+        },
+        {
+          "title": "소 득",
+          "description": "",
+          "fields": [
+            {
+              "name": "일당제",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "근로시간",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "월급제",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "자영업",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "기 타",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            }
+          ]
+        },
+        {
+          "title": "신고 확인",
+          "description": "본인은 상기와 같이 소득이 있음을 신고합니다.",
+          "fields": [
+            {
+              "name": "신고자",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            }
+          ]
+        },
+        {
+          "title": "주의사항",
+          "description": "※ 취업상태나 소득을 허위로 신고하는 경우는 ‘국민기초생활보장법 제49조(벌칙)’에 의거하여 1년 이하의 징역, 1,000만원 이하의 벌금 구류 또는 과료에 처할 수 있습니다.",
+          "fields": []
+        }
+      ],
+      "file": {
+        "path": "data/forms/희망저축계좌 및 청년내일저축계좌.hwpx"
+      }
+    },
+    {
+      "form_name": "금융정보 등(금융･신용･보험정보) 제공 동의서",
+      "aliases": [],
+      "description": "",
+      "sections": [
+        {
+          "title": "1. 지원대상자 가구 세대주 인적사항",
+          "description": "관계, 성명, 주민등록번호 (외국인등록번호 등) 등의 정보를 입력합니다.",
+          "fields": [
+            {
+              "name": "관계",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "성명",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "주민등록번호 (외국인등록번호 등)",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            }
+          ]
+        },
+        {
+          "title": "2. 금융정보 등 제공 동의자(지원대상자 또는 부양의무자)",
+          "description": "동의자에 대한 정보를 입력합니다. 유의사항을 참고하세요.",
+          "fields": [
+            {
+              "name": "세대주와의 관계",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "동의자 성명",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "주민등록번호 (외국인등록번호 등)",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "금융정보 등의 제공을 동의함",
+              "type": "checkbox",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "금융정보 등의 제공 사실을 동의자에게 통보하지 아니함에 동의함",
+              "type": "checkbox",
+              "required": false,
+              "condition": "",
+              "options": []
+            }
+          ]
+        },
+        {
+          "title": "3. 금융정보 등의 제공 범위, 대상 금융기관 등의 명칭",
+          "description": "뒷면 참조",
+          "fields": []
+        },
+        {
+          "title": "4. 금융정보 등의 제공 동의 유효기간",
+          "description": "동의서 제출 후 신청 서비스 자격 결정 전까지 유효합니다.",
+          "fields": []
+        },
+        {
+          "title": "5. 정보제공 목적",
+          "description": "사회보장급여의 이용･제공 및 수급권자 발굴에 관한 법률에 따른 목적입니다.",
+          "fields": []
+        },
+        {
+          "title": "기타",
+          "description": "210mm×297mm[백상지(80g/㎡) 또는 중질지(80g/㎡)]",
+          "fields": []
+        }
+      ],
+      "file": {
+        "path": "data/forms/희망저축계좌 및 청년내일저축계좌.hwpx"
+      }
+    }
+  ]
+}

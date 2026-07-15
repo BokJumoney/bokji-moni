@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.domain.chat.api.chat_router import router as chat_router
 from app.domain.user.api.auth_router import router as auth_router
 from app.infrastructure.config import settings
+from app.domain.admin.api.admin_router import router as admin_router
 
 
 @asynccontextmanager
@@ -44,7 +45,7 @@ app.add_middleware(
 
 app.include_router(chat_router, prefix="/api/v1/chat", tags=["챗봇"])
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["인증"])
-
+app.include_router(admin_router, tags=["파일 업로드"])
 
 @app.get("/")
 def home():

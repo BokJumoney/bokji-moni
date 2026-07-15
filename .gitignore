@@ -1,3 +1,4 @@
+*.pyc
 # Byte-compiled / optimized / DLL support
 __pycache__/
 *.py[cod]
@@ -154,3 +155,6 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+# File upload path
+storage/*
