@@ -1,4 +1,5 @@
 from langgraph.graph import START, END, StateGraph
+from app.domain.chat.graph.router.application_router import application_router
 from app.domain.chat.graph.state import ChatGraphState
 from app.domain.chat.graph.nodes.retrieve import retrieve
 from app.domain.chat.graph.nodes.generate import generate
@@ -6,7 +7,7 @@ from .nodes.qualification import qualification
 from .nodes.document import document
 from .nodes.form_help import form_help
 from .nodes.progress import progress
-from app.domain.chat.graph.router.application_router import application_router
+
 
 builder = StateGraph(ChatGraphState)
 
@@ -24,7 +25,7 @@ builder.add_conditional_edges(
         "qualification": "qualification",
         "document": "document",
         "form": "form_help",
-        "vectorstore": "retrieve",   # 수정
+        "vectorstore": "retrieve",   
     }
 )
 

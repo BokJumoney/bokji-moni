@@ -31,6 +31,14 @@ def get_vectorstore() -> PGVector:
         collection_name=settings.VECTOR_COLLECTION_NAME,
     )
 
+# 신청서 db
+@lru_cache(maxsize=1)
+def get_form_vectorstore() -> PGVector:
+    return PGVector(
+        connection=settings.database_url,
+        embeddings=embedding,
+        collection_name=settings.VECTOR_FORM_COLLECTION_NAME,
+    )
 
 # ── BM25 (키워드 검색) ─────────────────────────────────
 _bm25_retriever: BM25Retriever | None = None

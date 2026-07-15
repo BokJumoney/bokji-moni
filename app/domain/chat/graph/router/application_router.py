@@ -59,12 +59,12 @@ application_prompt = ChatPromptTemplate.from_messages(
         (
             "human",
             """
-현재 진행 단계:
-{current_step}
+            현재 진행 단계:
+            {current_step}
 
-사용자 질문:
-{question}
-"""
+            사용자 질문:
+            {question}
+            """
         ),
     ]
 )

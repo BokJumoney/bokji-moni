@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     VECTOR_COLLECTION_NAME: str = "welfare_policies"
     VECTOR_EMBEDDING_MODEL: str = "text-embedding-3-small"
 
+    # 신청서 
+    VECTOR_FORM_COLLECTION_NAME: str = "welfare_forms"
+
     # CSV 적재
     WELFARE_CSV_PATH: str = "data/detail_policy1.csv"
     CHUNK_SIZE: int = 1000
