@@ -24,13 +24,14 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
 
     # pgvector / Vectorstore
-    VECTOR_COLLECTION_NAME: str = "welfare_policies"
-    VECTOR_EMBEDDING_MODEL: str = "text-embedding-3-small"
+    VECTOR_COLLECTION_NAME: str = "welfare_policy_vector"
+    # VECTOR_EMBEDDING_MODEL: str = "text-embedding-3-small"
+    VECTOR_EMBEDDING_MODEL_SNOW: str = "dragonkue/snowflake-arctic-embed-l-v2.0-ko"
 
     # CSV 적재
-    WELFARE_CSV_PATH: str = "data/detail_policy1.csv"
+    WELFARE_CSV_PATH: str = "data/welfare_policy_details.csv"
     CHUNK_SIZE: int = 1000
-    CHUNK_OVERLAP: int = 150
+    CHUNK_OVERLAP: int = 150 #<-- 여기 바꿔야댐
 
     # 인증 세션 / 쿠키
     SESSION_COOKIE_NAME: str = "bokji_auth"

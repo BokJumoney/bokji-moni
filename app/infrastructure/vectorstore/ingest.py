@@ -10,10 +10,10 @@ repo root에서 실행:
 """
 import pandas as pd
 from langchain_core.documents import Document
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from sqlmodel import Session
 
 from app.domain.welfare.entity.models import WelfarePolicy
+from app.domain.welfare.service import parser
 from app.infrastructure.config import settings
 from app.infrastructure.db.connection import get_session
 from app.infrastructure.vectorstore.setup_vectorstore import (
@@ -22,12 +22,8 @@ from app.infrastructure.vectorstore.setup_vectorstore import (
     reset_retrievers,
 )
 
-
-def read_csv_and_split_text(
-    csv_path: str,
-    chunk_size: int = settings.CHUNK_SIZE,
-    chunk_overlap: int = settings.CHUNK_OVERLAP,
-) -> list[Document]:
+#한글 csv에서 청크로
+def read_csv_and_split_text( csv_path: str ) -> list[Document]:
     """
     CSV를 읽고 행별 Document를 생성한 뒤 청킹하여 반환.
     인코딩: utf-8-sig (BOM 포함 UTF-8).
@@ -36,53 +32,23 @@ def read_csv_and_split_text(
     df = pd.read_csv(csv_path, encoding="utf-8-sig")
     documents: list[Document] = []
 
-    for _, row in df.iterrows():
-        metadata = {
-            "service_id": str(row["서비스ID"]),
-            "service_name": str(row["서비스명"]),
-            "department": str(row["소관부처명"]),
-            "year": int(row["기준연도"]) if pd.notnull(row["기준연도"]) else 0,
-            "cycle": str(row["지원주기"]) if pd.notnull(row["지원주기"]) else "",
-            "type": str(row["제공유형"]) if pd.notnull(row["제공유형"]) else "",
-            "life_cycle": str(row["생애주기"]) if pd.notnull(row["생애주기"]) else "",
-            "topic": str(row["관심주제"]) if pd.notnull(row["관심주제"]) else "",
-            "household_type": str(row["가구유형"]) if pd.notnull(row["가구유형"]) else "",
-        }
+    #csv를 청킹해서 df로 바꿈
+    chunked_df = parser.chunk_dataframe(df)
 
-        page_content = f"""
-[서비스명: {row['서비스명']}]
-소관부처: {row['소관부처명']}
-서비스 요약: {row['서비스요약']}
+    for _, row in chunked_df.iterrows():
+        documents.append(
+            Document(
+                page_content=row["content"],
+                metadata={
+                    "service_id": row["service_id"],
+                    "service_name": row["service_name"],
+                    "chunk_type": row["chunk_type"],
+                },
+            )
+        )
 
-# 대상자 상세 내용
-{row['대상자상세내용']}
-
-# 선정 기준 및 자격 요건
-{row['선정기준내용']}
-
-# 급여 및 서비스 내용 (지원 혜택)
-{row['급여서비스내용']}
-
-# 신청 절차 및 방법
-{row['처리절차']}
-
-# 안내 및 문의
-- 문의처: {row['문의처']}
-- 문의처 목록: {row['문의처목록']}
-- 홈페이지: {row['홈페이지목록']}
-- 근거 법령: {row['근거법령목록']}
-        """.strip()
-
-        documents.append(Document(page_content=page_content, metadata=metadata))
-
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size,
-        chunk_overlap=chunk_overlap,
-        separators=["\n# ", "\n\n", "\n", " ", ""],
-    )
-    split_docs = text_splitter.split_documents(documents)
-    print(f"생성된 청크 수: {len(split_docs)}\n")
-    return split_docs
+    print(f"생성된 청크 수: {len(documents)}\n")
+    return documents
 
 
 def load_chunks_for_bm25() -> list[Document]:
@@ -104,13 +70,7 @@ def _sync_to_sqlmodel(chunks: list[Document]) -> None:
             session.add(WelfarePolicy(
                 service_id=m["service_id"],
                 service_name=m["service_name"],
-                department=m["department"],
-                year=m["year"],
-                cycle=m["cycle"],
-                type=m["type"],
-                life_cycle=m["life_cycle"],
-                topic=m["topic"],
-                household_type=m["household_type"],
+                chunk_type=m["chunk_type"],
                 page_content=chunk.page_content,
             ))
         session.commit()
@@ -125,9 +85,9 @@ def ingest_to_pgvector(csv_path: str | None = None) -> int:
     적재된 청크 수를 반환.
     """
     path = csv_path or settings.WELFARE_CSV_PATH
-    chunks = read_csv_and_split_text(path)
+    chunks = read_csv_and_split_text(path) #Document 청크를 리턴.
 
-    if not chunks:
+    if not chunks: #chunk가 비어있으면 그냥 리턴
         print("적재할 청크가 없습니다.")
         return 0
 
@@ -137,9 +97,11 @@ def ingest_to_pgvector(csv_path: str | None = None) -> int:
     # 1. PGVector 적재
     vectorstore = get_vectorstore()
     total = 0
+    ids = []
     for i in range(0, len(chunks), 100):
         batch = chunks[i:i + 100]
-        vectorstore.add_documents(batch)
+        ids = [f"{md.metadata["service_id"]}-{md.metadata["chunk_type"]}" for md in batch]
+        vectorstore.add_documents(batch, ids=ids)
         total += len(batch)
         print(f"PGVector 적재 진행: {total}/{len(chunks)}")
     print(f"PGVector 적재 완료: 총 {total}개 청크")

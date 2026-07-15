@@ -9,16 +9,19 @@ from functools import lru_cache
 
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers import EnsembleRetriever
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import OpenAIEmbeddings
 from langchain_postgres import PGVector
-
 from app.infrastructure.config import settings
 
+embedding_snow = HuggingFaceEmbeddings(model_name=settings.VECTOR_EMBEDDING_MODEL_SNOW)
+
+
 # ── 임베딩 ──────────────────────────────────────────────
-embedding = OpenAIEmbeddings(
-    model=settings.VECTOR_EMBEDDING_MODEL,
-    # api_key=settings.OPENAI_API_KEY, # 시스템 변수로 설정되어있음
-)
+# embedding = OpenAIEmbeddings(
+#     model=settings.VECTOR_EMBEDDING_MODEL,
+#     # api_key=settings.OPENAI_API_KEY, # 시스템 변수로 설정되어있음
+# )
 
 
 # ── PGVector ────────────────────────────────────────────
@@ -27,7 +30,7 @@ def get_vectorstore() -> PGVector:
     """langchain_postgres.PGVector 인스턴스를 반환 (싱글톤)."""
     return PGVector(
         connection=settings.database_url,
-        embeddings=embedding,
+        embeddings=embedding_snow,
         collection_name=settings.VECTOR_COLLECTION_NAME,
     )
 

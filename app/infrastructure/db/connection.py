@@ -23,7 +23,6 @@ def init_db() -> None:
 
     SQLModel.metadata.create_all(engine)
 
-
 def get_session():
     """FastAPI 의존성 주입용 세션 제공"""
     with Session(engine) as session:

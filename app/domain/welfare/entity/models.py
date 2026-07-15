@@ -17,13 +17,7 @@ class WelfarePolicy(SQLModel, table=True):
     # 정형 메타데이터
     service_id: str = Field(index=True)
     service_name: str = Field(index=True)
-    department: str = Field(default="", index=True)
-    year: int = Field(default=0, index=True)
-    cycle: str = Field(default="")
-    type: str = Field(default="")
-    life_cycle: str = Field(default="")
-    topic: str = Field(default="")
-    household_type: str = Field(default="")
+    chunk_type: str = Field(index=True)
 
     # 본문 (서술형)
     page_content: str
