@@ -18,7 +18,7 @@ class Settings(BaseSettings):
 
     # Ollama (로컬 LLM)
     LOCAL_MODEL: str = "exaone3.5"
-    LOCLAL_LLM_URL: str = "http://localhost:11434"
+    LOCAL_LLM_URL: str = "http://localhost:11434"
 
     # OpenAI (임베딩용)
     OPENAI_API_KEY: str = ""
