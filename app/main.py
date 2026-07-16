@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.domain.chat.api.chat_router import router as chat_router
 from app.domain.user.api.auth_router import router as auth_router
 from app.domain.admin.api.admin_router import router as admin_router
+from app.domain.admin.api.admin_policy import router as admin_policy_router
 from app.infrastructure.config import settings
 
 
@@ -41,14 +42,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app = FastAPI(
-    title="BokJi-Moni API",
-    description="AI 에이전트 기반 복지 정보 제공 서비스 API",
-    version="1.0.0",
-    lifespan=lifespan,
-)
-
 # CORS 설정
 app.add_middleware(
     CORSMiddleware,
@@ -61,7 +54,7 @@ app.add_middleware(
 app.include_router(chat_router, prefix="/api/v1/chat", tags=["챗봇"])
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["인증"])
 app.include_router(admin_router, tags=["파일 업로드"])
-
+app.include_router(admin_policy_router)
 
 @app.get("/")
 def home():
