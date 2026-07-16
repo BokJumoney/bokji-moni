@@ -477,15 +477,6 @@ async def finalize_subscription_tool(state: ChatGraphState) -> dict:
 
         return _subscription_result(await run_in_threadpool(change_setting))
 
-        generation = await run_in_threadpool(handle_active)
-    else:
-        intent = await _intent_chain.ainvoke({"question": question})
-
-        def handle_new():
-            with Session(engine) as session:
-                return _handle_new_intent(
-                    session, user_id, conversation_id, intent
-                )
     logger.warning(
         "구독 도구 결과 형식 오류: tool=%s artifact=%s",
         tool_message.name,
