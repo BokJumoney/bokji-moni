@@ -15,6 +15,7 @@ class ChatGraphState(TypedDict, total=False):
     current_step:str       # 신청 진행 단계
     application_info:dict    # 사용자가 입력한 신청 정보
     route: str
+    route_source: str  # active_workflow 또는 llm
     # 인증 계층에서 주입한다. LLM이 사용자/채팅방 식별자를 만들지 않는다.
     user_id: str
     conversation_id: str

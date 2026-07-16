@@ -11,8 +11,9 @@ repo root에서 실행:
 import pandas as pd
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from sqlmodel import Session
+from sqlmodel import Session, select
 
+from app.common.timezone import now_kst
 from app.domain.welfare.entity.models import WelfarePolicy
 from app.infrastructure.config import settings
 from app.infrastructure.db.connection import get_session
@@ -91,30 +92,51 @@ def load_chunks_for_bm25() -> list[Document]:
 
 
 def _sync_to_sqlmodel(chunks: list[Document]) -> None:
-    """WelfarePolicy SQLModel 테이블에 정형 메타데이터 동기화."""
+    """WelfarePolicy 테이블에 정책별 한 행으로 정형 데이터를 동기화한다.
+
+    벡터 저장소에는 검색 품질을 위해 여러 청크를 보관하지만 구독 관계는
+    정책 하나를 참조해야 한다. 따라서 같은 service_id의 청크를 합쳐 한 행만
+    만들며, 구독이 연결된 운영 DB에서는 전체 삭제 방식 대신 별도 마이그레이션
+    전략이 필요하다.
+    """
     session: Session = next(get_session())
     try:
-        # 기존 데이터 전체 삭제 (재적재 편의)
-        from sqlalchemy import delete
-        session.exec(delete(WelfarePolicy))
-        session.commit()
-
+        policies: dict[str, dict] = {}
         for chunk in chunks:
             m = chunk.metadata
-            session.add(WelfarePolicy(
-                service_id=m["service_id"],
-                service_name=m["service_name"],
-                department=m["department"],
-                year=m["year"],
-                cycle=m["cycle"],
-                type=m["type"],
-                life_cycle=m["life_cycle"],
-                topic=m["topic"],
-                household_type=m["household_type"],
-                page_content=chunk.page_content,
-            ))
+            service_id = m["service_id"]
+            if service_id not in policies:
+                policies[service_id] = {"metadata": m, "contents": []}
+            policies[service_id]["contents"].append(chunk.page_content)
+
+        for policy in policies.values():
+            m = policy["metadata"]
+            existing = session.exec(
+                select(WelfarePolicy).where(
+                    WelfarePolicy.service_id == m["service_id"]
+                )
+            ).first()
+            values = {
+                "service_name": m["service_name"],
+                "department": m["department"],
+                "year": m["year"],
+                "cycle": m["cycle"],
+                "type": m["type"],
+                "life_cycle": m["life_cycle"],
+                "topic": m["topic"],
+                "household_type": m["household_type"],
+                "page_content": "\n\n".join(policy["contents"]),
+            }
+            if existing is None:
+                session.add(WelfarePolicy(service_id=m["service_id"], **values))
+            else:
+                # 관리자가 입력한 마감일과 폐지 상태는 CSV 재적재로 덮지 않는다.
+                for field, value in values.items():
+                    setattr(existing, field, value)
+                existing.updated_at = now_kst()
+                session.add(existing)
         session.commit()
-        print(f"SQLModel 동기화 완료: {len(chunks)}행")
+        print(f"SQLModel 동기화 완료: {len(policies)}개 정책")
     finally:
         session.close()
 

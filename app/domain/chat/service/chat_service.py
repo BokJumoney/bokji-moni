@@ -31,6 +31,7 @@ from app.domain.chat.utils import (
     encode_cursor,
     normalize_title,
 )
+from app.domain.subscription.repository import SubscriptionDialogRepository
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +79,17 @@ class ChatService:
             {"role": m.role, "content": m.content} for m in history[:-1]
         ]
 
+        # LangGraph의 메모리 상태는 요청마다 새로 시작한다. 따라서 구독 후보를
+        # 고른 뒤 다음 턴에 "2번" 또는 "네"라고 답한 경우를 DB에서 복원한다.
+        active_subscription_dialog = await run_in_threadpool(
+            SubscriptionDialogRepository(self.session).get_active,
+            conversation.id,
+            user_id,
+        )
+        conversation_mode = (
+            "subscription" if active_subscription_dialog is not None else "general"
+        )
+
         # 4. LangGraph 호출 (DB transaction 밖에서)
         try:
             result = await graph.ainvoke(
@@ -86,10 +98,15 @@ class ChatService:
                     "chat_history": chat_history,
                     "documents": [],
                     "generation": "",
+                    "user_id": str(user_id),
+                    "conversation_id": str(conversation.id),
+                    "conversation_mode": conversation_mode,
                 }
             )
             ai_content = result.get("generation", "")
-            intent = "General"
+            # 그래프가 실제로 처리한 경로를 메시지 이력에 남겨 운영 중 구독
+            # 대화를 일반 대화와 구분할 수 있게 한다.
+            intent = str(result.get("route") or "General").title()
         except Exception as exc:  # noqa: BLE001
             logger.exception("LangGraph 호출 실패: conversation_id=%s", conversation.id)
             # 안전한 오류 메시지 저장 (원문 노출 금지)

@@ -7,15 +7,17 @@ from app.infrastructure.llm.gpt import get_llm_gpt
 
 # 일반 모드에서 사용자 질문 의도를 판단하는 Router
 OLLAMA_MODEL = settings.LOCAL_MODEL
-OLLAMA_BASE_URL = settings.LOCLAL_LLM_URL
+OLLAMA_BASE_URL = settings.LOCAL_LLM_URL
 
 # 프롬프트
 router_system = """
     당신은 사용자의 질문을 분석하여 적절한 처리 노드로 분류하는 라우터입니다.
-    다음 세 가지 카테고리 중 하나로만 분류하세요:
+    다음 네 가지 카테고리 중 하나로만 분류하세요:
     1. vectorstore: 정부 지원, 복지 정책, 실업, 생활고, 금융 취약계층 지원 등 공공/민간 복지 서비스와 관련된 질문인 경우
     2. casual_talk: 일상적인 대화, 단순 인사, 복지 외 타 분야 질문인 경우
     3. application: 
+    4. subscription: 정책 마감 알림 구독/해지, 구독 목록 조회, 신규 정책
+       소식 설정, 모든 알림 일시 중지/재개를 요청하는 경우
     [주의 사항]
     - 사용자가 '복지'나 '정책'이라는 단어를 직접 사용하지 않더라도, '실직', '퇴사', '생활비 부족', '파산', '취업 실패' 등 정부의 도움이나 지원 제도가 필요한 상황을 토로하는 경우반드시 WELFARE_POLICY로 분류해야 합니다.
 
@@ -26,17 +28,22 @@ router_system = """
     - "돈 많이 버는 법 알려줘" -> casual_talk
     - "청년내일저축계좌 신청하고 싶어요." → application
     - "제출 서류가 뭐예요?" → application
+    - "청년내일저축계좌 마감 전에 알려줘" → subscription
+    - "월세 지원 알림을 해지해줘" → subscription
+    - "내가 구독한 정책 보여줘" → subscription
 
     [사용자 질문]
     "{question}"
 
     [출력 형식]
-    텍스트 형태로 반환하세요: vectorstore 또는 casual_talk 또는 application
+    텍스트 형태로 반환하세요: vectorstore, casual_talk, application 또는 subscription
 """
 
 # Pydatic 객체로 받음
 class RouteQuery(BaseModel):
-    datasource: str = Field(description="vectorstore 또는 casual_talk 또는 application")
+    datasource: str = Field(
+        description="vectorstore, casual_talk, application 또는 subscription"
+    )
 
 route_prompt = ChatPromptTemplate.from_messages([
     ("system", router_system),
