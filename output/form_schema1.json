@@ -1,70 +1,101 @@
 {
   "forms": [
     {
-      "form_name": "자산형성지원사업 참여(변경) 신청서",
+      "form_name": "저소득층 기저귀 조제분유 지원(변경) 신청서",
       "aliases": [],
-      "description": "※ 처리기간 - 희망저축I 30일 - 희망저축II 70일 - 청년내일 100일",
+      "description": "※ [ ]에는 해당되는 곳에 √표를 합니다. / ※ 색상이 어두운 란은 신청인이 작성하지 않습니다.",
       "sections": [
         {
-          "title": "기본 정보",
+          "title": "신청 정보",
           "description": "",
           "fields": [
             {
-              "name": "가입연도",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "가입기수",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "가입은행",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "신청유형",
+              "name": "신규지원",
               "type": "checkbox",
-              "required": true,
+              "required": false,
               "condition": "",
-              "options": [
-                "희망저축계좌Ⅰ(생계･의료급여 수급 가구)",
-                "희망저축계좌Ⅱ(주거･교육급여 수급 및 차상위 가구)",
-                "청년내일저축계좌(기준 중위소득 50% 이하 가구의 청년)"
-              ]
+              "options": []
+            },
+            {
+              "name": "조제분유 추가 신청",
+              "type": "checkbox",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "접수번호",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "접수일자",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "처리기간",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "별도 안내",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
             }
           ]
         },
         {
-          "title": "신청자 정보",
+          "title": "신청인 정보",
           "description": "",
           "fields": [
             {
-              "name": "성 명",
+              "name": "성명 (본인)",
               "type": "text",
               "required": true,
               "condition": "",
               "options": []
             },
             {
-              "name": "주민등록번호",
+              "name": "주민등록번호 (외국인등록번호)",
               "type": "text",
               "required": true,
               "condition": "",
               "options": []
             },
             {
-              "name": "전화번호",
+              "name": "세대주와의 관계",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "자택전화",
               "type": "text",
               "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "세대주명",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "세대주 주민등록번호",
+              "type": "text",
+              "required": true,
               "condition": "",
               "options": []
             },
@@ -76,229 +107,9 @@
               "options": []
             },
             {
-              "name": "주 소",
+              "name": "전자우편 (E-mail)",
               "type": "text",
               "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "전자우편",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "비상연락",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "신청자와의 관계",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "직 업",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "근무지명",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "근무기간",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "근무형태",
-              "type": "checkbox",
-              "required": false,
-              "condition": "",
-              "options": [
-                "상용직(정규직)",
-                "임시직(계약직, 기간제)",
-                "일용직",
-                "아르바이트(시간제근로자)",
-                "자영업자"
-              ]
-            }
-          ]
-        },
-        {
-          "title": "가입자 정보",
-          "description": "※ 신청자와 가입자가 다를 경우 기재(청년내일저축계좌는 신청자와 가입자가 동일해야 합니다.)",
-          "fields": [
-            {
-              "name": "성 명",
-              "type": "text",
-              "required": true,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "주민등록번호",
-              "type": "text",
-              "required": true,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "신청자와의 관계",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "전화번호",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "휴대전화",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            }
-          ]
-        },
-        {
-          "title": "적립 및 기타정보",
-          "description": "",
-          "fields": [
-            {
-              "name": "월별 저축액",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "약정금액",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "저축액 사용계획",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "저축목적",
-              "type": "checkbox",
-              "required": false,
-              "condition": "",
-              "options": [
-                "주택구입･임대",
-                "본인･자녀의 고등교육･기술훈련",
-                "창업･운영자금",
-                "의료비",
-                "개인자산형성(ISA･일반적금)",
-                "국민연금･고용보험･건강보험 본인부담금",
-                "가구원 돌봄비용",
-                "결혼자금",
-                "그 밖에 자립･자활"
-              ]
-            },
-            {
-              "name": "향후 자립･ 자활계획",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "유사 자산형성사업 참여 여부",
-              "type": "checkbox",
-              "required": false,
-              "condition": "",
-              "options": [
-                "미참여",
-                "참여(사업명: , 참여기간: , 수령액: )"
-              ]
-            },
-            {
-              "name": "희망･내일키움통장 등 재가입 여부",
-              "type": "checkbox",
-              "required": false,
-              "condition": "",
-              "options": [
-                "최초",
-                "재가입(사업명: , 참여기간: )"
-              ]
-            }
-          ]
-        },
-        {
-          "title": "서명",
-          "description": "위와 같이 신청합니다. 년월일 신청인 (서명 또는 인) ※ 신청자 본인의 서명 또는 도장 날인 필 특별자치시장･특별자치도지사･시장･군수･구청장 귀하",
-          "fields": []
-        }
-      ],
-      "file": {
-        "path": "data/forms/희망저축계좌 및 청년내일저축계좌.hwpx"
-      }
-    },
-    {
-      "form_name": "해지 자산형성지원사업 신청서",
-      "aliases": [],
-      "description": "해지철회",
-      "sections": [
-        {
-          "title": "통장정보",
-          "description": "",
-          "fields": [
-            {
-              "name": "통장종류",
-              "type": "checkbox",
-              "required": true,
-              "condition": "",
-              "options": [
-                "희망저축계좌Ⅰ(생계･의료급여 수급자)",
-                "희망저축계좌Ⅱ(주거･교육급여 수급자 및 차상위자)",
-                "청년내일저축계좌(기준 중위소득 100% 이하 가구의 청년)"
-              ]
-            },
-            {
-              "name": "성명",
-              "type": "text",
-              "required": true,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "생년월일",
-              "type": "text",
-              "required": true,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "은행계좌번호(본인적립금)",
-              "type": "text",
-              "required": true,
               "condition": "",
               "options": []
             },
@@ -310,42 +121,347 @@
               "options": []
             },
             {
-              "name": "전화번호",
+              "name": "추가 연락처",
               "type": "text",
-              "required": true,
+              "required": false,
               "condition": "",
               "options": []
-            },
+            }
+          ]
+        },
+        {
+          "title": "신청 서비스",
+          "description": "",
+          "fields": [
             {
-              "name": "해지유형",
+              "name": "신청서비스",
               "type": "checkbox",
               "required": true,
               "condition": "",
               "options": [
-                "희망저축계좌Ⅰ: 지급",
-                "희망저축계좌Ⅰ: 일부지급(만기성공)",
-                "희망저축계좌Ⅰ: 환수",
-                "희망저축계좌Ⅱ: 지급",
-                "희망저축계좌Ⅱ: 환수",
-                "청년내일저축계좌: 지급",
-                "청년내일저축계좌: 환수"
+                "기저귀",
+                "기저귀 및 조제분유 (변경신청)",
+                "조제분유 추가"
+              ]
+            },
+            {
+              "name": "영아수",
+              "type": "checkbox",
+              "required": true,
+              "condition": "",
+              "options": [
+                "1명",
+                "2명",
+                "3명",
+                "직접 입력( 명)"
               ]
             }
           ]
         },
         {
-          "title": "신청인 정보",
+          "title": "가족 사항 및 대상자",
           "description": "",
           "fields": [
             {
-              "name": "신청인 서명 또는 도장",
+              "name": "세대주와의 관계",
               "type": "text",
               "required": true,
               "condition": "",
               "options": []
             },
             {
-              "name": "신청일",
+              "name": "대상자 여부",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "성명",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "주민등록번호 (외국인등록번호)",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "동거 여부 (미동거사유)",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "건강상태 (장애/질병)",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "전화번호 (집/직장)",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            }
+          ]
+        },
+        {
+          "title": "배우자 관계",
+          "description": "※ 배우자 관계(해당자에 한해 작성)",
+          "fields": [
+            {
+              "name": "법률혼",
+              "type": "checkbox",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "사실혼",
+              "type": "checkbox",
+              "required": false,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "사실상 이혼",
+              "type": "checkbox",
+              "required": false,
+              "condition": "",
+              "options": []
+            }
+          ]
+        },
+        {
+          "title": "신청 확인",
+          "description": "위와 같이 저소득층 기저귀･조제분유 지원을 신청합니다.",
+          "fields": [
+            {
+              "name": "신청인(대리인) 성명",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "신청인과의 관계",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            }
+          ]
+        },
+        {
+          "title": "첨부서류",
+          "description": "제2쪽 참조 / 수수료 없음",
+          "fields": []
+        }
+      ],
+      "file_path": "data/forms/기저귀 조제분유 지원 신청서.hwpx"
+    },
+    {
+      "form_name": "행정정보 공동이용 동의서",
+      "aliases": [],
+      "description": "",
+      "sections": [
+        {
+          "title": "신청인의 범위",
+          "description": "",
+          "fields": [
+            {
+              "name": "신청인의 범위",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": [
+                "본인, 가족, 친족(배우자, 8촌 이내의 혈족, 4촌 이내의 인척)",
+                "민법 상 후견인(법정대리인)",
+                "기타 영아를 실질적으로 양육하는 자로서 사회복지시설의 장, 위탁가정의 위탁모 등",
+                "담당공무원"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "신청인 제출서류",
+          "description": "",
+          "fields": [
+            {
+              "name": "신청인 제출서류",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": [
+                "신청인의 신분증(본인확인용, 주민등록증 ‧ 운전면허증 ‧ 여권 ‧ 장애인등록증 등 본인 및 주소를 확인할 수 있는 증명서)",
+                "영아 부모의 건강보험증 사본",
+                "영아 부모의 소득 증빙자료(최근 월분 건보료 산정금액 확인서, 급여명세서, 근로소득원천징수부 등) * 행정정보 공동이용에 동의하지 않는 경우에만 제출합니다.",
+                "대리인이 신청하는 경우: 대리인 신분증 사본, 대리권을 확인할 수 있는 위임장",
+                "모유수유가 불가능하다고 인정할 수 있는 의사진단서(소견서) 등, 산모사망증빙서류 * 조제분유 지원 대상자에 한합니다."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "담당공무원 확인사항",
+          "description": "",
+          "fields": [
+            {
+              "name": "담당공무원 확인사항",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": [
+                "국민기초생활수급자 증명서, 주민등록표 등본 * 지원신청자가 행정정보 공동이용에 동의하는 경우에만 확인합니다."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "행정정보 공동이용 동의서",
+          "description": "",
+          "fields": [
+            {
+              "name": "행정정보 공동이용 동의서",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": [
+                "본인은 이 건 업무처리와 관련하여 관계 중앙행정기관의 장이 ｢전자정부법｣ 제36조에 따른 행정정보의 공동이용을 통해 위의 담당공무원 확인사항을 확인하는 것에 동의합니다. *동의하지 않는 경우에는 신청인이 대표자의 주민등록표 등본을 제출해야 합니다."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "신청인 (서명 또는 인)",
+          "description": "",
+          "fields": [
+            {
+              "name": "신청인 (서명 또는 인)",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            }
+          ]
+        },
+        {
+          "title": "관계기관 보유 개인정보 확인 동의서",
+          "description": "",
+          "fields": [
+            {
+              "name": "관계기관 보유 개인정보 확인 동의서",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": [
+                "이 신청서를 접수한 특별자치시장･특별자치도지사･시장･군수･구청장이｢사회보장급여의 이용･제공 및 수급권자의 발굴에 관한 법률｣ 제23조에 따른 지원대상자의 수급자격 확인을 위한 목적으로 인적사항 및 가족관계 확인에 관한 정보, 소득ㆍ재산ㆍ근로능력ㆍ취업상태에 관한 정보, 사회보장급여의 수혜이력에 관한 정보, 그 밖에 수급권자를 선정하기 위해 필요한 정보로서 주민등록전산정보ㆍ가족관계등록전산정보, 금융ㆍ국세ㆍ지방세, 토지ㆍ건물ㆍ건강보험ㆍ국민연금ㆍ고용보험ㆍ산업재해보상보험ㆍ출입국ㆍ병무ㆍ보훈급여ㆍ교정 등 관련 정보를 정기적으로 관계기관에 요청하거나 관련 정보통신망을 통해 조회함에 동의하며, 5년간 보유하고(지원대상자 보호에 필요한 사회보장정보는 5년을 초과하여 보유할 수 있습니다), 그 기간이 경과하면 파기함을 고지합니다."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "본인(대리인 포함)은 유의사항에 대하여 담당공무원으로부터 안내받았으며 위의 내용을 확인합니다.",
+          "description": "",
+          "fields": [
+            {
+              "name": "본인(대리인 포함) 확인",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            }
+          ]
+        },
+        {
+          "title": "안내 및 유의사항",
+          "description": "",
+          "fields": [
+            {
+              "name": "안내 및 유의사항",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": [
+                "조제분유 지원 대상자는 모유수유 권장 방침에 따라 기저귀 지원대상 중 산모가 질병* 또는 사망으로 모유수유가 불가능한 경우로 한정합니다. * 질병 예 : 항암치료, 후천성면역결핍증(HIV), 방사선 치료 등",
+                "신청 정보는 원활한 국민행복카드 발급 및 기저귀･조제분유 구매 지원 위해 보건복지부 및 사회보장정보원에게 제공됩니다.",
+                "｢사회보장급여의 이용･제공 및 수급권자의 발굴에 관한 법률｣ 제22조에 따라 거짓 또는 그 밖의 부정한 방법으로 사업 수혜를 받은 자는 그 비용만큼 환수처분을 받으며, 같은 법률 제54조제3항에 따라 1년 이하의 징역 또는 1천만원 이하의 벌금에 처할 수 있습니다."
+              ]
+            }
+          ]
+        }
+      ],
+      "file_path": "data/forms/기저귀 조제분유 지원 신청서.hwpx"
+    },
+    {
+      "form_name": "국민행복카드 상담전화를 위한 개인정보 제공동의서",
+      "aliases": [],
+      "description": "",
+      "sections": [
+        {
+          "title": "개인정보 제공동의",
+          "description": "국민행복카드 발급에 필요한 안내 및 확인(상담전화(TM))를 위해 신청서에 기재된 개인정보를 다음과 같이 제공하는 데 동의하십니까? - 제공항목 : 성명 및 연락처(자택, 휴대전화) - 제공목적 : 국민행복카드 발급 및 본인 확인 - 제공받는 기관 : 신청인이 지정한 국민행복카드 사업자(카드사) - 보유기간 : 카드발급 완료 등 보유 목적이 달성될 때까지",
+          "fields": [
+            {
+              "name": "개인정보 제공 동의",
+              "type": "checkbox",
+              "required": true,
+              "condition": "",
+              "options": [
+                "동의함",
+                "동의하지 않음"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "신청카드 (택1)",
+          "description": "",
+          "fields": [
+            {
+              "name": "신청카드",
+              "type": "checkbox",
+              "required": true,
+              "condition": "",
+              "options": [
+                "롯데카드",
+                "삼성카드",
+                "BC카드",
+                "IBK기업은행",
+                "NH농협",
+                "대구은행",
+                "부산은행",
+                "경남은행",
+                "SC제일은행",
+                "수협은행",
+                "우체국",
+                "제주은행",
+                "우리은행",
+                "광주은행",
+                "전북은행"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "안내 및 유의사항",
+          "description": "○ 이미 국민행복카드를 보유하고 있는 경우에는 추가로 국민행복카드를 발급받을 필요가 없으며, 기존 국민행복카드를 이용하실 수 있습니다. ○ 해당바우처 서비스 신청인(본인) 명의로 국민행복카드가 발급됩니다. (신청인(본인)과 카드발급명의자가 다를 경우엔 카드발급이 불가합니다) ○ 본 동의를 거부할 수 있으며, 동의 거부에 따른 불이익은 없습니다. 다만, 신청하신 바우처는 국민행복카드로 서비스 이용 및 결제가 가능하므로, 국민행복카드가 없는 경우는 가까운 국민행복카드 영업점(우체국, 은행 및 카드센터 등)을 방문하거나 각 카드사별 인터넷으로 접속하여 직접 카드 발급을 신청할 수 있습니다. ○ 국민행복카드는 신용카드, 체크카드 중 이용자가 선택하여 발급이 가능합니다. 다만, 신용심사결과에 신용카드 발급이 제한될 수 있으며 자세한 내용은 카드사를 통해 확인하시기 바랍니다. ○ 전용카드는 신용 또는 체크카드 발급이 불가능한 경우로서, 계좌압류결정문을 법원으로부터 발급받은 경우(계좌압류자) 또는 신용불량자 등 카드사 내부심사과정에서 신용도에 따라 발급이 가능하며, 이용자의 기호에 따라 발급이 불가능합니다. ○ 관련 법령에 따라 14세 이하 미성년자는 국민행복카드 발급이 불가능하므로, 법적보호자 명의로 신청하시기 바랍니다.",
+          "fields": []
+        },
+        {
+          "title": "확인",
+          "description": "본인은 본 동의서의 내용에 대하여 담당공무원으로부터 안내받았음을 확인합니다.",
+          "fields": [
+            {
+              "name": "신청인 서명 또는 인",
               "type": "text",
               "required": true,
               "condition": "",
@@ -354,17 +470,15 @@
           ]
         }
       ],
-      "file": {
-        "path": "data/forms/희망저축계좌 및 청년내일저축계좌.hwpx"
-      }
+      "file_path": "data/forms/기저귀 조제분유 지원 신청서.hwpx"
     },
     {
-      "form_name": "근로활동 및 소득신고서",
+      "form_name": "저소득층 기저귀 조제분유 지원 중지 신청서",
       "aliases": [],
-      "description": "",
+      "description": "특별자치시장․특별자치도지사․시장ㆍ군수ㆍ구청장은 중지신청을 접수한 날로부터 20일 이내에 처리합니다.",
       "sections": [
         {
-          "title": "수급(권)자 정보",
+          "title": "신청인",
           "description": "",
           "fields": [
             {
@@ -375,7 +489,7 @@
               "options": []
             },
             {
-              "name": "생년월일",
+              "name": "주민등록번호 (외국인등록번호)",
               "type": "text",
               "required": true,
               "condition": "",
@@ -387,209 +501,128 @@
               "required": true,
               "condition": "",
               "options": []
+            },
+            {
+              "name": "전화번호",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
             }
           ]
         },
         {
-          "title": "취업상태",
+          "title": "대리 신청인",
           "description": "",
           "fields": [
             {
-              "name": "유 형",
+              "name": "성 명",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "주민등록번호 (외국인등록번호 등)",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "신청인과의 관계",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "주 소",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            },
+            {
+              "name": "전화번호",
+              "type": "text",
+              "required": false,
+              "condition": "",
+              "options": []
+            }
+          ]
+        },
+        {
+          "title": "지원 중지 사유",
+          "description": "",
+          "fields": [
+            {
+              "name": "사유",
+              "type": "checkbox",
+              "required": true,
+              "condition": "",
+              "options": [
+                "본인포기",
+                "영아의 사망",
+                "소득 변동",
+                "기타"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "지원 중지 적용일자",
+          "description": "",
+          "fields": [
+            {
+              "name": "년 월 일부터",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            }
+          ]
+        },
+        {
+          "title": "신청 확인",
+          "description": "저소득층 기저귀․조제분유 지원에 대해 위와 같이 중지신청을 합니다.",
+          "fields": [
+            {
+              "name": "신청인 서명",
+              "type": "text",
+              "required": true,
+              "condition": "",
+              "options": []
+            }
+          ]
+        },
+        {
+          "title": "구비 서류",
+          "description": "",
+          "fields": [
+            {
+              "name": "서류 목록",
               "type": "text",
               "required": true,
               "condition": "",
               "options": [
-                "상시근로자",
-                "임시･일용직",
-                "자영업",
-                "기타"
+                "저소득층 기저귀 조제분유 지원 결정통보서 1부",
+                "신청인의 인적사항을 확인할 수 있는 서류"
               ]
             },
             {
-              "name": "직장(사업장)명",
-              "type": "text",
-              "required": true,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "직장(사업장)주소",
-              "type": "text",
-              "required": true,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "전화",
+              "name": "수수료",
               "type": "text",
               "required": false,
               "condition": "",
-              "options": []
+              "options": [
+                "수수료 없음"
+              ]
             }
           ]
-        },
-        {
-          "title": "소 득",
-          "description": "",
-          "fields": [
-            {
-              "name": "일당제",
-              "type": "text",
-              "required": true,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "근로시간",
-              "type": "text",
-              "required": true,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "월급제",
-              "type": "text",
-              "required": true,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "자영업",
-              "type": "text",
-              "required": true,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "기 타",
-              "type": "text",
-              "required": true,
-              "condition": "",
-              "options": []
-            }
-          ]
-        },
-        {
-          "title": "신고 확인",
-          "description": "본인은 상기와 같이 소득이 있음을 신고합니다.",
-          "fields": [
-            {
-              "name": "신고자",
-              "type": "text",
-              "required": true,
-              "condition": "",
-              "options": []
-            }
-          ]
-        },
-        {
-          "title": "주의사항",
-          "description": "※ 취업상태나 소득을 허위로 신고하는 경우는 ‘국민기초생활보장법 제49조(벌칙)’에 의거하여 1년 이하의 징역, 1,000만원 이하의 벌금 구류 또는 과료에 처할 수 있습니다.",
-          "fields": []
         }
       ],
-      "file": {
-        "path": "data/forms/희망저축계좌 및 청년내일저축계좌.hwpx"
-      }
-    },
-    {
-      "form_name": "금융정보 등(금융･신용･보험정보) 제공 동의서",
-      "aliases": [],
-      "description": "",
-      "sections": [
-        {
-          "title": "1. 지원대상자 가구 세대주 인적사항",
-          "description": "관계, 성명, 주민등록번호 (외국인등록번호 등) 등의 정보를 입력합니다.",
-          "fields": [
-            {
-              "name": "관계",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "성명",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "주민등록번호 (외국인등록번호 등)",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            }
-          ]
-        },
-        {
-          "title": "2. 금융정보 등 제공 동의자(지원대상자 또는 부양의무자)",
-          "description": "동의자에 대한 정보를 입력합니다. 유의사항을 참고하세요.",
-          "fields": [
-            {
-              "name": "세대주와의 관계",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "동의자 성명",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "주민등록번호 (외국인등록번호 등)",
-              "type": "text",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "금융정보 등의 제공을 동의함",
-              "type": "checkbox",
-              "required": false,
-              "condition": "",
-              "options": []
-            },
-            {
-              "name": "금융정보 등의 제공 사실을 동의자에게 통보하지 아니함에 동의함",
-              "type": "checkbox",
-              "required": false,
-              "condition": "",
-              "options": []
-            }
-          ]
-        },
-        {
-          "title": "3. 금융정보 등의 제공 범위, 대상 금융기관 등의 명칭",
-          "description": "뒷면 참조",
-          "fields": []
-        },
-        {
-          "title": "4. 금융정보 등의 제공 동의 유효기간",
-          "description": "동의서 제출 후 신청 서비스 자격 결정 전까지 유효합니다.",
-          "fields": []
-        },
-        {
-          "title": "5. 정보제공 목적",
-          "description": "사회보장급여의 이용･제공 및 수급권자 발굴에 관한 법률에 따른 목적입니다.",
-          "fields": []
-        },
-        {
-          "title": "기타",
-          "description": "210mm×297mm[백상지(80g/㎡) 또는 중질지(80g/㎡)]",
-          "fields": []
-        }
-      ],
-      "file": {
-        "path": "data/forms/희망저축계좌 및 청년내일저축계좌.hwpx"
-      }
+      "file_path": "data/forms/기저귀 조제분유 지원 신청서.hwpx"
     }
   ]
 }

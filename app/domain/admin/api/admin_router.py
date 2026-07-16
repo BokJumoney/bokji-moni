@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Depends, File, UploadFile, status
+from sqlmodel import Session
+from app.infrastructure.db.connection import get_session
 
 from app.domain.admin.dto.response import FileDeleteResponse, FileUploadResponse
 from app.domain.admin.service.admin_file_service import AdminFileService
@@ -27,7 +29,7 @@ def get_cmd_exec_service() -> CmdExecService:
 @router.post(
     "/file",
     response_model=FileUploadResponse,
-    status_code=status.HTTP_201_CREATED,
+    status_code=status.HTTP_201_CREATED
 )
 async def upload_file(
     file: UploadFile = File(...),
