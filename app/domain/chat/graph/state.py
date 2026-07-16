@@ -15,3 +15,11 @@ class ChatGraphState(TypedDict, total=False):
     current_step:str       # 신청 진행 단계
     application_info:dict    # 사용자가 입력한 신청 정보
     route: str
+    # 인증 계층에서 주입한다. LLM이 사용자/채팅방 식별자를 만들지 않는다.
+    user_id: str
+    conversation_id: str
+    subscription_action: str
+    subscription_stage: str
+    policy_query: str
+    candidate_policy_ids: list[int]
+    selected_policy_id: int
