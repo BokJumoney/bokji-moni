@@ -1,6 +1,8 @@
 async def document(state):
 
-    return {
+    print("document 분기 확인")
 
-        "generation":"제출 서류를 안내드립니다."
+    return {
+        "question": state["question"],
+        "current_step":"document"
     }

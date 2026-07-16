@@ -2,7 +2,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from app.domain.chat.graph.state import ChatGraphState
 from app.infrastructure.config import settings
-from app.infrastructure.llm.ollama import get_llm
+#from app.infrastructure.llm.ollama import get_llm
+from app.infrastructure.llm.gpt import get_llm_gpt
 
 # 일반 모드에서 사용자 질문 의도를 판단하는 Router
 OLLAMA_MODEL = settings.LOCAL_MODEL
@@ -42,7 +43,7 @@ route_prompt = ChatPromptTemplate.from_messages([
     ("human", "{question}"),
 ])
 
-llm = get_llm()
+llm = get_llm_gpt()
 
 question_router_llm = llm.with_structured_output(RouteQuery)
 

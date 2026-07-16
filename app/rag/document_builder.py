@@ -44,8 +44,8 @@ def json_to_documents(path):
 
 
                 field_content = f"""
-- 항목명: {name}
-"""
+                                - 항목명: {name}
+                                """
 
 
                 if field.get("required"):

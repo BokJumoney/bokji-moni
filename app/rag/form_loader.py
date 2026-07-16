@@ -39,12 +39,12 @@ def load_form_documents():
 
                 summary_sections.append(
                     f"""
-영역:
-{section["title"]}
+                    영역:
+                    {section["title"]}
 
-작성 항목:
-{", ".join(field_names)}
-"""
+                    작성 항목:
+                    {", ".join(field_names)}
+                    """
                 )
 
 
@@ -63,7 +63,7 @@ def load_form_documents():
             "form_name": form_name,
             "section": "전체",
             "has_fields": True,
-            "file": form.get("file"),
+            "file_path": form.get("file_path", ""),
         }
 
 
@@ -122,17 +122,17 @@ def load_form_documents():
 
 
             content = f"""
-신청서명:
-{form_name}
+                        신청서명:
+                        {form_name}
 
 
-영역:
-{section_title}
+                        영역:
+                        {section_title}
 
 
-작성 항목:
-{chr(10).join(field_text)}
-"""
+                        작성 항목:
+                        {chr(10).join(field_text)}
+                        """
 
 
             metadata = {
@@ -140,7 +140,7 @@ def load_form_documents():
                 "form_name": form_name,
                 "section": section_title,
                 "has_fields": True,
-                "file": form.get("file"),
+                "file_path": form.get("file_path", ""),
             }
 
 

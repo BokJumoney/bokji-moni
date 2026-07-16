@@ -14,8 +14,8 @@ prompt = ChatPromptTemplate.from_messages(
         (
             "system",
             """
-당신은 친근한 대화 파트너입니다.
-""",
+            당신은 친근한 대화 파트너입니다.
+            """,
         ),
         (
             "human",
@@ -28,13 +28,10 @@ chain = prompt | llm
 
 
 async def casual_talk(state: ChatGraphState):
-
-    response = await chain.ainvoke(
-        {
+    response = await chain.ainvoke({
             "question": state["question"]
         }
     )
-
     return {
         "generation": response.content
     }
