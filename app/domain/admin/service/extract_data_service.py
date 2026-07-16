@@ -250,6 +250,6 @@ class ExtractDataService:
 
         except Exception as error:
             print(
-                f"[오류] "
+                f"parse_md_to_txt - [오류] "
                 f"{type(error).__name__}: {error}"
             )
