@@ -4,11 +4,13 @@ import logging
 import re
 import uuid
 from datetime import timedelta
-from typing import Literal
+from typing import Annotated, Literal
 
 from fastapi.concurrency import run_in_threadpool
+from langchain_core.messages import AIMessage, ToolMessage
 from langchain_core.prompts import ChatPromptTemplate
-from pydantic import BaseModel, Field
+from langchain_core.tools import tool
+from langgraph.prebuilt import InjectedState
 from sqlmodel import Session
 
 from app.common.exceptions import SubscriptionError
@@ -28,40 +30,24 @@ from app.infrastructure.vectorstore.setup_vectorstore import get_ensemble_retrie
 
 logger = logging.getLogger(__name__)
 
-
-class SubscriptionIntent(BaseModel):
-    """LLM이 반환할 수 있는 액션을 서버가 허용한 값으로 제한한다."""
-
-    action: Literal[
-        "subscribe",
-        "unsubscribe",
-        "list_subscriptions",
-        "enable_policy_news",
-        "disable_policy_news",
-        "pause_all",
-        "resume_all",
-        "not_subscription",
-    ] = Field(description="사용자가 요청한 구독 관련 동작")
-    policy_query: str | None = Field(
-        default=None,
-        description="구독 또는 해지할 정책을 찾기 위한 검색어",
-    )
-
-
-_intent_prompt = ChatPromptTemplate.from_messages(
+_tool_prompt = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            """너는 복지 정책 알림 구독 요청을 구조화하는 라우터다.
-사용자의 문장을 허용된 action 중 하나로 분류하고, 특정 정책이 언급되면
-불필요한 '알려줘', '구독해줘' 같은 표현을 제외한 policy_query를 반환한다.
-정책 마감 알림 요청은 subscribe, 알림 해지는 unsubscribe로 분류한다.
-설정과 무관한 요청은 not_subscription으로 분류한다.""",
+            """너는 복지 정책 알림 구독 도구를 선택하는 에이전트다.
+사용자 요청 한 건에 도구를 정확히 하나만 호출한다.
+
+- 현재 구독 목록 조회: list_policy_subscriptions
+- 특정 정책 구독/해지: search_subscription_policies
+- 신규·폐지 정책 소식 설정, 전체 알림 일시 중지/재개:
+  request_notification_setting_change
+
+정책 검색어에서 '알려줘', '구독해줘', '해지해줘' 같은 불필요한 표현은 제거한다.
+사용자 ID나 대화방 ID를 추측하거나 도구 인자로 만들지 마라.""",
         ),
         ("human", "{question}"),
     ]
 )
-_intent_chain = _intent_prompt | get_llm().with_structured_output(SubscriptionIntent)
 
 _POSITIVE = {"네", "예", "응", "좋아", "확인", "등록", "해줘", "맞아", "yes", "y"}
 _NEGATIVE = {"아니", "아니요", "취소", "그만", "됐어", "no", "n"}
@@ -141,6 +127,96 @@ def _search_candidates(
         subscribed_ids = {item.policy_id for item in repo.list_active(user_id)}
         candidates = [policy for policy in candidates if policy.id in subscribed_ids]
     return candidates[:3]
+
+
+@tool(response_format="content_and_artifact")
+def list_policy_subscriptions(
+    user_id: Annotated[str, InjectedState("user_id")],
+) -> tuple[str, dict]:
+    """현재 사용자가 구독 중인 복지 정책 목록을 조회한다."""
+    with Session(engine) as session:
+        rows = PolicySubscriptionService(session).list_subscriptions(uuid.UUID(user_id))
+        if not rows:
+            message = "현재 구독 중인 정책이 없습니다."
+            policy_ids: list[int] = []
+        else:
+            lines = ["현재 구독 중인 정책입니다."]
+            lines.extend(
+                _format_policy(policy, index)
+                for index, (_, policy) in enumerate(rows, 1)
+            )
+            message = "\n".join(lines)
+            policy_ids = [policy.id for _, policy in rows]
+    return message, {"kind": "subscription_list", "policy_ids": policy_ids}
+
+
+@tool(response_format="content_and_artifact")
+def search_subscription_policies(
+    policy_query: str,
+    action: Literal["subscribe", "unsubscribe"],
+    user_id: Annotated[str, InjectedState("user_id")],
+) -> tuple[str, dict]:
+    """구독하거나 해지할 정책 후보를 최대 3건 검색한다."""
+    normalized_query = policy_query.strip()
+    if not normalized_query:
+        verb = "구독" if action == "subscribe" else "해지"
+        message = f"어떤 정책을 {verb}할지 정책명을 알려주세요."
+        return message, {
+            "kind": "policy_candidates",
+            "action": action,
+            "policy_query": "",
+            "candidate_policy_ids": [],
+        }
+
+    with Session(engine) as session:
+        candidates = _search_candidates(
+            session, uuid.UUID(user_id), normalized_query, action
+        )
+    if not candidates:
+        message = (
+            "구독 중인 정책에서 일치하는 항목을 찾지 못했습니다."
+            if action == "unsubscribe"
+            else "일치하는 정책을 찾지 못했습니다. 정책명을 조금 더 구체적으로 알려주세요."
+        )
+    else:
+        message = f"{len(candidates)}건의 정책 후보를 찾았습니다."
+    return message, {
+        "kind": "policy_candidates",
+        "action": action,
+        "policy_query": normalized_query,
+        "candidate_policy_ids": [policy.id for policy in candidates],
+    }
+
+
+@tool(response_format="content_and_artifact")
+def request_notification_setting_change(
+    action: Literal[
+        "enable_policy_news",
+        "disable_policy_news",
+        "pause_all",
+        "resume_all",
+    ],
+) -> tuple[str, dict]:
+    """정책 소식 수신 또는 전체 알림 상태 변경 요청을 구조화한다.
+
+    이 도구는 DB를 변경하지 않으며, 서버의 결정적 후처리가 실제 변경을 수행한다.
+    """
+    return "알림 설정 변경 요청을 확인했습니다.", {
+        "kind": "notification_setting_change",
+        "action": action,
+    }
+
+
+SUBSCRIPTION_TOOLS = [
+    list_policy_subscriptions,
+    search_subscription_policies,
+    request_notification_setting_change,
+]
+
+_tool_chain = _tool_prompt | get_llm().bind_tools(
+    SUBSCRIPTION_TOOLS,
+    tool_choice="any",
+)
 
 
 def _find_selection(question: str, policies: list) -> object | None:
@@ -260,25 +336,76 @@ def _handle_active_dialog(
     return "진행 중인 구독 요청이 만료되었습니다. 다시 요청해 주세요."
 
 
-def _handle_new_intent(
-    session: Session,
-    user_id: uuid.UUID,
-    conversation_id: uuid.UUID,
-    intent: SubscriptionIntent,
+def _subscription_result(generation: str) -> dict:
+    """구독 경로의 공통 그래프 상태를 반환한다."""
+    return {
+        "generation": generation,
+        "conversation_mode": "subscription",
+        "route": "subscription",
+    }
+
+
+async def subscription_entry(state: ChatGraphState) -> dict:
+    """활성 대화가 있으면 LLM 도구 선택을 건너뛴다."""
+    user_id = uuid.UUID(str(state["user_id"]))
+    conversation_id = uuid.UUID(str(state["conversation_id"]))
+
+    def load_dialog():
+        with Session(engine) as session:
+            return SubscriptionDialogRepository(session).get_active(
+                conversation_id, user_id
+            )
+
+    active_dialog = await run_in_threadpool(load_dialog)
+    return {
+        "subscription_stage": "active" if active_dialog is not None else "new"
+    }
+
+
+async def handle_active_subscription(state: ChatGraphState) -> dict:
+    """저장된 후보 선택·확인 대화를 결정적으로 처리한다."""
+    user_id = uuid.UUID(str(state["user_id"]))
+    conversation_id = uuid.UUID(str(state["conversation_id"]))
+    question = state["question"]
+
+    def handle_active():
+        with Session(engine) as session:
+            dialog = SubscriptionDialogRepository(session).get_active(
+                conversation_id, user_id
+            )
+            if dialog is None:
+                return "진행 중인 구독 요청을 찾을 수 없습니다. 다시 요청해 주세요."
+            return _handle_active_dialog(session, dialog, question)
+
+    generation = await run_in_threadpool(handle_active)
+    return _subscription_result(generation)
+
+
+async def subscription_tool_agent(state: ChatGraphState) -> dict:
+    """신규 구독 요청을 한 개의 허용된 도구 호출로 변환한다."""
+    response = await _tool_chain.ainvoke({"question": state["question"]})
+    return {"messages": [response]}
+
+
+def route_tool_call(state: ChatGraphState) -> Literal["tools", "fallback"]:
+    """LLM이 도구를 호출하지 않은 비정상 경우를 안전하게 종료한다."""
+    messages = state.get("messages", [])
+    if messages and isinstance(messages[-1], AIMessage) and messages[-1].tool_calls:
+        return "tools"
+    return "fallback"
+
+
+async def subscription_tool_fallback(_: ChatGraphState) -> dict:
+    return _subscription_result(
+        "구독 요청을 이해하지 못했습니다. "
+        "구독할 정책명 또는 변경할 알림 설정을 알려주세요."
+    )
+
+
+def _apply_notification_setting(
+    session: Session, user_id: uuid.UUID, action: str
 ) -> str:
     service = PolicySubscriptionService(session)
-    action = intent.action
-
-    if action == "list_subscriptions":
-        rows = service.list_subscriptions(user_id)
-        if not rows:
-            return "현재 구독 중인 정책이 없습니다."
-        lines = ["현재 구독 중인 정책입니다."]
-        lines.extend(
-            _format_policy(policy, index)
-            for index, (_, policy) in enumerate(rows, 1)
-        )
-        return "\n".join(lines)
     if action == "enable_policy_news":
         service.set_policy_news(user_id, True)
         return "신규·폐지 정책 소식 이메일을 받도록 설정했습니다."
@@ -291,56 +418,64 @@ def _handle_new_intent(
     if action == "resume_all":
         service.set_paused(user_id, False)
         return "정책 알림을 다시 받도록 설정했습니다."
-    if action not in {"subscribe", "unsubscribe"}:
-        return "구독 요청을 이해하지 못했습니다. 구독할 정책명을 함께 알려주세요."
-    if not intent.policy_query or not intent.policy_query.strip():
-        verb = "구독" if action == "subscribe" else "해지"
-        return f"어떤 정책을 {verb}할지 정책명을 알려주세요."
+    return "알림 설정 변경 요청을 처리하지 못했습니다."
 
-    candidates = _search_candidates(
-        session, user_id, intent.policy_query.strip(), action
-    )
-    if not candidates:
-        return (
-            "구독 중인 정책에서 일치하는 항목을 찾지 못했습니다."
-            if action == "unsubscribe"
-            else "일치하는 정책을 찾지 못했습니다. 정책명을 조금 더 구체적으로 알려주세요."
+
+async def finalize_subscription_tool(state: ChatGraphState) -> dict:
+    """도구 결과를 검증하고 대화 생성 또는 DB 변경을 수행한다."""
+    tool_messages = [
+        message
+        for message in state.get("messages", [])
+        if isinstance(message, ToolMessage)
+    ]
+    if len(tool_messages) != 1:
+        return _subscription_result(
+            "한 번에 하나의 구독 요청만 처리할 수 있습니다. "
+            "원하는 작업을 하나만 다시 알려주세요."
         )
-    try:
-        _, message = _create_dialog(
-            session,
-            conversation_id,
-            user_id,
-            action,
-            intent.policy_query.strip(),
-            candidates,
-        )
-        return message
-    except SubscriptionError as exc:
-        return exc.message
 
+    tool_message = tool_messages[0]
+    artifact = tool_message.artifact if isinstance(tool_message.artifact, dict) else {}
+    kind = artifact.get("kind")
+    if kind == "subscription_list":
+        return _subscription_result(str(tool_message.content))
 
-async def subscription_agent(state: ChatGraphState) -> dict:
-    """현재 대화 단계에 맞춰 구독 요청 한 턴을 처리한다."""
     user_id = uuid.UUID(str(state["user_id"]))
     conversation_id = uuid.UUID(str(state["conversation_id"]))
-    question = state["question"]
 
-    def load_dialog():
-        with Session(engine) as session:
-            return SubscriptionDialogRepository(session).get_active(
-                conversation_id, user_id
-            )
+    if kind == "policy_candidates":
+        candidate_ids = artifact.get("candidate_policy_ids", [])
+        if not candidate_ids:
+            return _subscription_result(str(tool_message.content))
 
-    active_dialog = await run_in_threadpool(load_dialog)
-    if active_dialog is not None:
-        def handle_active():
+        def create_dialog():
             with Session(engine) as session:
-                # 다른 Session에서 사용할 수 있도록 같은 ID로 다시 읽는다.
-                dialog = session.get(SubscriptionDialog, active_dialog.id)
-                if dialog is None:
-                    return "진행 중인 구독 요청을 찾을 수 없습니다. 다시 요청해 주세요."
-                return _handle_active_dialog(session, dialog, question)
+                policies = SubscriptionRepository(session).get_policies(candidate_ids)
+                if not policies:
+                    return "일치하는 정책을 더 이상 찾을 수 없습니다. 다시 검색해 주세요."
+                try:
+                    _, message = _create_dialog(
+                        session,
+                        conversation_id,
+                        user_id,
+                        str(artifact["action"]),
+                        str(artifact["policy_query"]),
+                        policies,
+                    )
+                    return message
+                except SubscriptionError as exc:
+                    return exc.message
+
+        return _subscription_result(await run_in_threadpool(create_dialog))
+
+    if kind == "notification_setting_change":
+        def change_setting():
+            with Session(engine) as session:
+                return _apply_notification_setting(
+                    session, user_id, str(artifact.get("action", ""))
+                )
+
+        return _subscription_result(await run_in_threadpool(change_setting))
 
         generation = await run_in_threadpool(handle_active)
     else:
@@ -351,11 +486,12 @@ async def subscription_agent(state: ChatGraphState) -> dict:
                 return _handle_new_intent(
                     session, user_id, conversation_id, intent
                 )
-
-        generation = await run_in_threadpool(handle_new)
-
-    return {
-        "generation": generation,
-        "conversation_mode": "subscription",
-        "route": "subscription",
-    }
+    logger.warning(
+        "구독 도구 결과 형식 오류: tool=%s artifact=%s",
+        tool_message.name,
+        artifact,
+    )
+    return _subscription_result(
+        "구독 요청을 처리하는 중 도구 결과를 확인하지 못했습니다. "
+        "다시 시도해 주세요."
+    )
