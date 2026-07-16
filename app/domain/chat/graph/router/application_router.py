@@ -2,10 +2,11 @@ from pydantic import BaseModel, Field
 from langchain_core.prompts import ChatPromptTemplate
 
 from app.domain.chat.graph.state import ChatGraphState
-from app.infrastructure.llm.ollama import get_llm
+#from app.infrastructure.llm.ollama import get_llm
+from app.infrastructure.llm.gpt import get_llm_gpt
 
 
-llm = get_llm()
+llm = get_llm_gpt()
 
 
 class ApplicationRoute(BaseModel):
@@ -23,7 +24,10 @@ class ApplicationRoute(BaseModel):
 application_system = """
 너는 복지 신청 보조 라우터다.
 
-사용자의 질문을 보고 적절한 노드로 이동시켜라.
+사용자의 질문과 현재 진행 단계를 보고 적절한 노드로 이동시켜라.
+
+현재 진행 단계가 없거나 entry인 경우에는
+현재 단계에 의존하지 말고 사용자의 질문 의도를 기준으로 판단한다.
 
 qualification:
 - 신청 자격
@@ -84,5 +88,6 @@ async def application_router(state: ChatGraphState):
             "current_step": state.get("current_step")
         }
     )
+    print("APPLICATION ROUTE:", result.step)
 
     return result.step

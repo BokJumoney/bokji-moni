@@ -1,5 +1,6 @@
 async def qualification(state):
 
     return {
-        "generation":"신청 자격을 확인하겠습니다."
+        "question": state["question"],
+        "current_step":"qualification"
     }

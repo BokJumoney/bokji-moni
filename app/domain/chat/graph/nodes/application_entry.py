@@ -3,5 +3,5 @@ async def application_entry(state: ChatGraphState):
 
     return {
         "conversation_mode": "application",
-        "current_step": "qualification"
+        "current_step": ""
     }

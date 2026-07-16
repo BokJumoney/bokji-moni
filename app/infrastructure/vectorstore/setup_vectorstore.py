@@ -91,3 +91,13 @@ def reset_retrievers() -> None:
     _bm25_retriever = None
     _ensemble_retriever = None
     get_vectorstore.cache_clear()
+
+
+
+def get_application_retriever():
+
+    return get_form_vectorstore().as_retriever(
+        search_kwargs={
+            "k": 4
+        }
+    )
