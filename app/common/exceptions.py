@@ -95,3 +95,39 @@ class ChatStorageError(ChatError):
     status_code = 500
     code = "CHAT_STORAGE_ERROR"
     message = "채팅 데이터를 저장하는 중 오류가 발생했습니다."
+
+
+# ---------------------------------------------------------------------------
+# 정책 구독 도메인 예외
+# ---------------------------------------------------------------------------
+
+
+class SubscriptionError(Exception):
+    """구독 API와 채팅 에이전트가 함께 사용하는 도메인 예외 베이스."""
+
+    status_code: int = 400
+    code: str = "SUBSCRIPTION_ERROR"
+    message: str = "정책 구독 처리 중 오류가 발생했습니다."
+
+    def __init__(self, message: str | None = None) -> None:
+        if message is not None:
+            self.message = message
+        super().__init__(self.message)
+
+
+class PolicyNotFoundError(SubscriptionError):
+    status_code = 404
+    code = "POLICY_NOT_FOUND"
+    message = "정책을 찾을 수 없습니다."
+
+
+class PolicyNotSubscribableError(SubscriptionError):
+    status_code = 422
+    code = "POLICY_NOT_SUBSCRIBABLE"
+    message = "현재 마감 알림을 구독할 수 없는 정책입니다."
+
+
+class SubscriptionNotFoundError(SubscriptionError):
+    status_code = 404
+    code = "SUBSCRIPTION_NOT_FOUND"
+    message = "구독 중인 정책을 찾을 수 없습니다."
