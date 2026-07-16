@@ -86,3 +86,16 @@ def reset_retrievers() -> None:
     _bm25_retriever = None
     _ensemble_retriever = None
     get_vectorstore.cache_clear()
+
+
+def rebuild_bm25() -> None:
+    """
+    DB 전체 청크로 BM25를 다시 만들고 앙상블 캐시를 비운다.
+    BM25는 증분 추가가 불가하므로, API 업데이트로 정책이
+    추가/폐지된 뒤 마지막에 한 번 호출한다.
+    """
+    from app.infrastructure.vectorstore.ingest import load_chunks_for_bm25
+
+    global _ensemble_retriever
+    _init_bm25_retriever(load_chunks_for_bm25())
+    _ensemble_retriever = None  # 다음 조회 때 새 BM25로 재조립

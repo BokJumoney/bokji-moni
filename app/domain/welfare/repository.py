@@ -5,7 +5,9 @@
 벡터 유사도 검색은 PGVector 측(setup_vectorstore.py)에서 처리.
 """
 from typing import Optional
-from sqlmodel import Session, select
+
+from sqlalchemy import delete
+from sqlmodel import Session, select, col
 
 from app.domain.welfare.entity.models import WelfarePolicy
 from app.infrastructure.db.connection import get_session
@@ -30,6 +32,10 @@ class WelfareRepository:
         stmt = select(WelfarePolicy).where(WelfarePolicy.service_id == service_id)
         return self.session.exec(stmt).first()
 
+    def get_service_id(self) -> Optional[str]:
+        stmt = select(WelfarePolicy.service_id)
+        return list(self.session.exec(stmt).all())
+
     def list_all(self, limit: int = 100, offset: int = 0) -> list[WelfarePolicy]:
         stmt = select(WelfarePolicy).limit(limit).offset(offset)
         return list(self.session.exec(stmt).all())
@@ -52,3 +58,9 @@ class WelfareRepository:
         result = self.session.exec(delete(WelfarePolicy))
         self.session.commit()
         return result.rowcount or 0
+
+    def delete_old_policy(self, service_ids):
+        stmt = delete(WelfarePolicy).where(col(WelfarePolicy.service_id) .in_ (service_ids))
+        self.session.exec(stmt)
+        self.session.commit()
+        return None

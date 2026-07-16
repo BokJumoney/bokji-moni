@@ -10,10 +10,10 @@ repo root에서 실행:
 """
 import pandas as pd
 from langchain_core.documents import Document
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app.domain.welfare.entity.models import WelfarePolicy
-from app.domain.welfare.service import parser
+from app.domain.welfare.service import chunker
 from app.infrastructure.config import settings
 from app.infrastructure.db.connection import get_session
 from app.infrastructure.vectorstore.setup_vectorstore import (
@@ -33,7 +33,7 @@ def read_csv_and_split_text( csv_path: str ) -> list[Document]:
     documents: list[Document] = []
 
     #csv를 청킹해서 df로 바꿈
-    chunked_df = parser.chunk_dataframe(df)
+    chunked_df = chunker.chunk_dataframe(df)
 
     for _, row in chunked_df.iterrows():
         documents.append(
@@ -52,8 +52,28 @@ def read_csv_and_split_text( csv_path: str ) -> list[Document]:
 
 
 def load_chunks_for_bm25() -> list[Document]:
-    """BM25Retriever용 원본 청크 로드."""
-    return read_csv_and_split_text(settings.WELFARE_CSV_PATH)
+    """
+    BM25Retriever용 전체 청크 로드.
+
+    CSV는 초기 적재 이후 API 업데이트로 낡아지므로,
+    적재 시마다 동기화되는 WelfarePolicy 테이블을 원본으로 사용한다.
+    """
+    session: Session = next(get_session())
+    try:
+        rows = session.exec(select(WelfarePolicy)).all()
+        return [
+            Document(
+                page_content=row.page_content,
+                metadata={
+                    "service_id": row.service_id,
+                    "service_name": row.service_name,
+                    "chunk_type": row.chunk_type,
+                },
+            )
+            for row in rows
+        ]
+    finally:
+        session.close()
 
 
 def _sync_to_sqlmodel(chunks: list[Document]) -> None:

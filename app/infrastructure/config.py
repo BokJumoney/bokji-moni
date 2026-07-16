@@ -4,7 +4,6 @@ from typing import Literal
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 class Settings(BaseSettings):
     # 실행 환경
     APP_ENV: Literal["development", "test", "production"] = "development"
@@ -22,6 +21,9 @@ class Settings(BaseSettings):
 
     # OpenAI (임베딩용)
     OPENAI_API_KEY: str = ""
+
+    # 공공데이터포털 (공데포 저소득 복지 정책 API 키)
+    WELFARE_API_KEY: str = ""
 
     # pgvector / Vectorstore
     VECTOR_COLLECTION_NAME: str = "welfare_policy_vector"
