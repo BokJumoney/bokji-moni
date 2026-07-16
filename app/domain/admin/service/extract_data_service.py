@@ -15,7 +15,7 @@ class ExtractDataService:
         return ChatOpenAI(
             model="gpt-5.6-luna",
             temperature=0,
-            api_key=settings.openai_api_key
+            api_key=settings.OPENAI_API_KEY
         )
 
     def read_markdown(
