@@ -6,7 +6,7 @@ from app.infrastructure.config import settings
 
 llm = ChatOllama(
     model=settings.LOCAL_MODEL,
-    base_url=settings.LOCLAL_LLM_URL,
+    base_url=settings.LOCAL_LLM_URL,
 )
 
 prompt = ChatPromptTemplate.from_messages(
