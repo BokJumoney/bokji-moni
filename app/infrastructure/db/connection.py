@@ -25,6 +25,8 @@ def init_db() -> None:
     """
     # 엔티티 메타데이터 등록 보장
     from app.domain.chat.entity import models as _chat_models  # noqa: F401
+    from app.domain.welfare.entity import models as _welfare_models  # noqa: F401
+    from app.domain.subscription.entity import models as _subscription_models  # noqa: F401
     from app.domain.user.entity import models as _user_models  # noqa: F401
 
     with engine.connect() as conn:
