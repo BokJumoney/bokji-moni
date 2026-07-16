@@ -1,189 +1,89 @@
 # Embedding 및 Vector DB 저장
 # Document를 임베딩하여 PostgreSQL(pgvector)에 저장하고 검색
-
-import json
-
-from langchain_openai import OpenAIEmbeddings
-
-from app.infrastructure.db.connection import get_connection
-
-from pgvector.psycopg2 import register_vector
-
-
-
-embedding_model = OpenAIEmbeddings(
-    model="text-embedding-3-small"
-)
-
+from langchain_core.documents import Document
+from sqlmodel import Session
+from sqlalchemy import delete
+from app.domain.welfare.entity.welfareform import WelfareForm
+from app.infrastructure.db.connection import get_session
+from app.infrastructure.vectorstore.setup_vectorstore import get_form_vectorstore
 
 
 # 같은 form + section 묶기
-def merge_results(results):
-
+def merge_results(documents: list[Document]):
     grouped = {}
 
-
-    for content, metadata, distance in results:
+    for doc in documents:
+        metadata = doc.metadata
 
         key = (
             metadata["form_name"],
             metadata["section"]
         )
 
-
         if key not in grouped:
-
             grouped[key] = {
-
                 "content": [],
-
-                "metadata": metadata,
-
-                "distance": distance
-
+                "metadata": metadata
             }
 
-
-        grouped[key]["content"].append(
-            content
-        )
-
+        grouped[key]["content"].append(doc.page_content)
 
     merged = []
 
-
     for item in grouped.values():
-
-        merged.append(
-
-            (
-                "\n\n".join(
-                    item["content"]
-                ),
-
-                item["metadata"],
-
-                item["distance"]
-
-            )
-
-        )
-
+        merged.append({
+            "content": "\n\n".join(item["content"]),
+            "metadata": item["metadata"]
+        })
 
     return merged
 
 
 
+def _sync_to_sqlmodel(documents: list[Document]):
 
+    session: Session = next(get_session())
 
-# 최초 실행 테이블 생성
-def init_table():
+    try:
+        # session.exec(delete(WelfareForm))
+        session.commit()
 
-    conn = get_connection()
+        for doc in documents:
 
-    cursor = conn.cursor()
+            m = doc.metadata
 
+            session.add(
+                WelfareForm(
+                    policy_code=m.get("policy_code", "yet"),
+                    form_name=m.get("form_name", ""),
+                    section=m.get("section", ""),
+                    file_path=m.get("file_path", ""),
+                    page_content=doc.page_content,
+                )
+            )
 
-    cursor.execute(
-        """
-        CREATE EXTENSION IF NOT EXISTS vector;
-        """
-    )
+        session.commit()
+        print(f"SQLModel 저장 완료 : {len(documents)}개")
 
-
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS welfare_forms
-        (
-            id SERIAL PRIMARY KEY,
-
-            content TEXT,
-
-            embedding vector(1536),
-
-            metadata JSONB
-        );
-        """
-    )
-
-
-    conn.commit()
-
-
-    cursor.close()
-
-    conn.close()
-
+    finally:
+        session.close()
 
 
 
 
 # Document 저장
+
+
 def save_documents(documents):
 
-    init_table()
+    # 1. Vector DB 저장
+    vectorstore = get_form_vectorstore()
+    vectorstore.add_documents(documents)
 
+    print(f"Vector DB 저장 완료 : {len(documents)}개")
 
-    conn = get_connection()
-
-    register_vector(conn)
-
-    cursor = conn.cursor()
-
-
-    vectors = embedding_model.embed_documents(
-        [
-            doc.page_content
-            for doc in documents
-        ]
-    )
-
-
-    for doc, vector in zip(
-        documents,
-        vectors
-    ):
-
-
-        cursor.execute(
-            """
-            INSERT INTO welfare_forms
-            (
-                content,
-                embedding,
-                metadata
-            )
-            VALUES
-            (
-                %s,
-                %s,
-                %s
-            )
-            """,
-
-            (
-                doc.page_content,
-
-                vector,
-
-                json.dumps(
-                    doc.metadata,
-                    ensure_ascii=False
-                )
-            )
-        )
-
-
-    conn.commit()
-
-    cursor.close()
-
-    conn.close()
-
-
-    print(
-        f"{len(documents)}개 저장 완료"
-    )
+    # 2. SQLModel 저장
+    _sync_to_sqlmodel(documents)
 
 
 
@@ -191,74 +91,54 @@ def save_documents(documents):
 # 사용자 질문 검색
 def search_document(query):
 
+    vectorstore = get_form_vectorstore()
 
-    conn = get_connection()
+    docs = vectorstore.similarity_search(
+        query,
+        k=10
+    )
 
-    register_vector(conn)
+    results = merge_results(docs)
 
-
-    cursor = conn.cursor()
-
-
-
-    query_vector = embedding_model.embed_query(
+    results = rerank_by_section(
+        results,
         query
     )
 
+    return results[:1]
 
 
-    vector_string = "[" + ",".join(
-
-        map(str, query_vector)
-
-    ) + "]"
-
-
-
-    cursor.execute(
-
-        """
-        SELECT
-
-            content,
-
-            metadata,
-
-            embedding <=> %s::vector AS distance
+SECTION_ALIAS = {
+    "직업 및 근무 정보": [
+        "직장", "회사", "근무", "직업", "일", "고용"
+    ],
+    "가입자 정보": [
+        "가입자", "가입한 사람", "가입 대상자", "연락처"
+    ],
+    "적립 및 기타정보": [
+        "저축", "적립", "금액", "사용 계획"
+    ]
+}
 
 
-        FROM welfare_forms
+def rerank_by_section(results, query):
+    target_section = None
 
+    for section, keywords in SECTION_ALIAS.items():
+        if any(keyword in query for keyword in keywords):
+            target_section = section
+            break
 
-        ORDER BY distance
+    if not target_section:
+        return results
 
+    matched = []
+    others = []
 
-        LIMIT 10
+    for item in results:
+        if item["metadata"].get("section") == target_section:
+            matched.append(item)
+        else:
+            others.append(item)
 
-        """,
-
-        (
-            vector_string,
-        )
-
-    )
-
-
-
-    results = cursor.fetchall()
-
-
-
-    results = merge_results(
-        results
-    )
-
-
-
-    cursor.close()
-
-    conn.close()
-
-
-
-    return results
+    return matched + others

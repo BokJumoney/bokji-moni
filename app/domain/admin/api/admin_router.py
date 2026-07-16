@@ -35,7 +35,7 @@ def get_cmd_exec_service() -> CmdExecService:
 @router.post(
     "/file",
     response_model=FileUploadResponse,
-    status_code=status.HTTP_201_CREATED,
+    status_code=status.HTTP_201_CREATED
 )
 async def upload_file(
     file: UploadFile = File(...),

@@ -4,7 +4,7 @@ import re
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from app.domain.admin.service.admin_file_service import AdminFileService
-from app.core.config import settings
+from app.infrastructure.config import settings
 
 class ExtractDataService:
     def __init__(self, admin_file_service: AdminFileService):

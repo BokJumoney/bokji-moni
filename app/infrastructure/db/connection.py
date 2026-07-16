@@ -2,7 +2,8 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlmodel import SQLModel, Session
-
+from app.domain.welfare.entity.models import WelfarePolicy
+from app.domain.welfare.entity.welfareform import WelfareForm
 from app.infrastructure.config import settings
 
 # 엔진 생성 (psycopg 드라이버 사용)

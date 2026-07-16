@@ -1,34 +1,3 @@
-# from bs4 import BeautifulSoup
-
-# # 하나의 문서에서 신청서 단위 분리\
-# # 하나의  HWPX 파일 안에는 여러 개의 표 존재 ->  Table 단위로 분리
-# def split_forms(markdown):
-
-#     soup = BeautifulSoup(markdown, "html.parser")
-
-#     forms = []
-
-#     for table in soup.find_all("table"):
-
-#         title = ""
-
-#         node = table.previous_sibling
-
-#         while node:
-
-#             text = str(node).strip()
-
-#             if text:
-#                 title = text
-#                 break
-
-#             node = node.previous_sibling
-
-#         forms.append(
-#             f"{title}\n\n{str(table)}"
-#         )
-
-#     return forms
 from bs4 import BeautifulSoup
 
 
