@@ -1,7 +1,7 @@
 import psycopg
-import hashlib
 import re
 from pathlib import Path
+import uuid
 
 from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -22,6 +22,7 @@ class PolicyEmbeddingService:
                     f"""
                     CREATE TABLE IF NOT EXISTS welfare_policy_pdf_vector (
                         id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                        policy_id VARCHAR(300) NOT NULL,
                         policy_name VARCHAR(100) NOT NULL,
                         chunk_type VARCHAR(30) NOT NULL,
                         content VARCHAR(2000),
@@ -43,14 +44,16 @@ class PolicyEmbeddingService:
                 cursor.execute(
                     """
                     INSERT INTO welfare_policy_pdf_vector (
+                        policy_id,
                         policy_name,
                         chunk_type,
                         content,
                         embedding
                     )
-                    VALUES (%s, %s, %s, %s)
+                    VALUES (%s, %s, %s, %s, %s)
                     """,
                     (
+                        document["policy_id"],
                         document["policy_name"],
                         document["chunk_type"],
                         document["content"],
@@ -204,11 +207,13 @@ class PolicyEmbeddingService:
         # 정책 명 추출
         policy_name = blocks[0].split(":")[1].replace("\n", "")
 
-        for block in blocks:
+        # 정책명은 chunk에서 제외 (prefix로 들어감)
+        for block in blocks[1:]:
             chunk_type, content = block.split(":", 1)
             chunk_type = chunk_type.replace("\n", "")
             result.append({
                 "policy_name": policy_name,
+                "policy_id": str(uuid.uuid5(uuid.NAMESPACE_DNS, policy_name)),
                 "chunk_type": chunk_type,
                 "content": f"[{policy_name}] {chunk_type} {content}"
             })
