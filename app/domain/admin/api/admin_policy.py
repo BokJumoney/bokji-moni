@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
-from sqlmodel import Session
+from sqlmodel import Session, select
+
+from app.domain.admin.entity.models import PdfWelfareList
 from app.infrastructure.db.connection import get_session
 
 router = APIRouter(
@@ -16,21 +16,14 @@ def get_policies(
     """
     관리자 신청서 업로드용 정책 목록 조회
     """
-    query = text("""
-                SELECT DISTINCT
-                        policy_id, policy_name
-                 FROM welfare_policy_pdf_vector
-                 ORDER BY policy_name
-                    """)
-    result = session.exec(query).mappings().all()
-    
-    policies = []
+    policies = session.exec(
+        select(PdfWelfareList).order_by(PdfWelfareList.policy_name)
+    ).all()
 
-    for row in result:
-        policies.append(
-            {
-                "id": row.policy_id,
-                "name": row.policy_name.strip()
-            }
-        )
-    return policies
+    return [
+        {
+            "policy_id": str(policy.policy_uuid),
+            "name": policy.policy_name.strip(),
+        }
+        for policy in policies
+    ]

@@ -5,6 +5,7 @@ import uuid
 
 from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
+from app.infrastructure.config import settings
 
 
 class PolicyEmbeddingService:
@@ -223,21 +224,44 @@ class PolicyEmbeddingService:
     # =========================================================
     # Document 생성
     # =========================================================
+    #
+    # def create_documents(
+    #     self,
+    #     policy_blocks: list[str]
+    # ) -> tuple[Document]:
+    #     documents: list[Document] = []
+    #
+    #     for index, policy_block in enumerate(
+    #         policy_blocks,
+    #         start=1,
+    #     ):
+    #         parsed_documents = self.parse_category_documents(policy_block)
+    #         for document in parsed_documents:
+    #             print(f"[{document["policy_name"]} - {document["chunk_type"]}] : 문서 파싱 완료 ({len(document["content"])}자)")
+    #             documents.append(document)
+    #
+    #     return documents
 
     def create_documents(
-        self,
-        policy_blocks: list[str]
-    ) -> tuple[list[str], list[str]]:
-        documents: list[str] = []
+            self,
+            policy_blocks: list[str],
+    ) -> list[Document]:
+        documents: list[Document] = []
 
-        for index, policy_block in enumerate(
-            policy_blocks,
-            start=1,
-        ):
+        for policy_block in policy_blocks:
             parsed_documents = self.parse_category_documents(policy_block)
-            for document in parsed_documents:
-                print(f"[{document["policy_name"]} - {document["chunk_type"]}] : 문서 파싱 완료 ({len(document["content"])}자)")
-                documents.append(document)
+
+            for parsed in parsed_documents:
+                documents.append(
+                    Document(
+                        page_content=parsed["content"],
+                        metadata={
+                            "policy_id": parsed["policy_id"],
+                            "policy_name": parsed["policy_name"],
+                            "chunk_type": parsed["chunk_type"],
+                        },
+                    )
+                )
 
         return documents
 
@@ -270,13 +294,8 @@ class PolicyEmbeddingService:
 
     # 이게 메인(텍스트 파일을 임베딩 및 저장)
     async def txtfile_embedding(self, file_path: str):
-        MODEL_NAME = (
-            "dragonkue/"
-            "snowflake-arctic-embed-l-v2.0-ko"
-        )
-
         embeddings = HuggingFaceEmbeddings(
-            model_name=MODEL_NAME,
+            model_name=settings.VECTOR_EMBEDDING_HUGGINGFACE_MODEL,
             model_kwargs={
                 "device": "cpu",      # GPU 사용 시 "cuda"
             },
@@ -294,3 +313,12 @@ class PolicyEmbeddingService:
         self.create_table()
         for document, vector in zip(documents, document_vectors):
             self.insert_policy(document, vector)
+
+    async def get_pdf_documents(
+            self,
+            file_path: str,
+    ) -> list[Document]:
+        text = self.read_policy_text(file_path)
+        policy_blocks = self.split_policy_blocks(text)
+
+        return self.create_documents(policy_blocks)
