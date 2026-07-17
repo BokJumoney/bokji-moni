@@ -34,9 +34,10 @@ def parse_to_document( chunked_df:DataFrame ) -> list[Document]:
     return documents
 
 
-def _sync_to_sqlmodel(chunks: list[Document]) -> None:
+def sync_to_sqlmodel(chunks: list[Document]):
     """WelfarePolicy SQLModel 테이블에 신규 청크 추가."""
     session: Session = next(get_session())
+    new_wp_list = []
     try:
         for chunk in chunks:
             m = chunk.metadata
@@ -45,23 +46,30 @@ def _sync_to_sqlmodel(chunks: list[Document]) -> None:
                 service_name=m["service_name"],
                 chunk_type=m["chunk_type"],
                 page_content=chunk.page_content,
-            ))
+            )) #RDB 테이블에 저장
+            new_wp_list.append({
+                "service_id": m["service_id"],
+                "service_name": m["service_name"],
+                "chunk_type": m["chunk_type"],
+                "page_content": chunk.page_content,
+            }) #반환할 리스트에 추가
         session.commit()
         print(f"[new policy]SQLModel 동기화 완료: {len(chunks)}행")
     finally:
         session.close()
+    return new_wp_list
 
 
-def ingest_to_pgvector(chunked_df: DataFrame) -> int:
+def ingest_to_pgvector(chunked_df: DataFrame) -> list:
     """
     신규 정책 청크를 PGVector에 추가 + SQLModel 동기화.
-    적재된 청크 수를 반환.
+    적재된 데이터를 dict로 반환.
     """
     chunks = parse_to_document(chunked_df) #청크를 Document로 변환하여 리턴.
 
     if not chunks: #chunk가 비어있으면 그냥 리턴
         print("적재할 청크가 없습니다.")
-        return 0
+        return []
 
     # 1. PGVector에 신규 청크 추가
     vectorstore = get_vectorstore()
@@ -70,9 +78,9 @@ def ingest_to_pgvector(chunked_df: DataFrame) -> int:
     print(f"[new policy]PGVector 적재 완료: 총 {len(chunks)}개 청크")
 
     # 2. SQLModel 테이블 동기화 (BM25 재빌드의 원본)
-    _sync_to_sqlmodel(chunks)
+    wp_list = sync_to_sqlmodel(chunks)
 
-    return len(chunks)
+    return wp_list
 
 
 def delete_from_pgvector(service_ids: list[str]) -> None:

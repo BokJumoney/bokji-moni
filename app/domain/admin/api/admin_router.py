@@ -76,4 +76,5 @@ def delete_file(
 
 @router.get("/api_call", tags=[Tags.ADMIN])
 async def rag_api_call(session: Session = Depends(get_session)):
-    await rag_service.api_call_rag_update(session)
+    wp_list = await rag_service.api_call_rag_update(session)
+    return wp_list
