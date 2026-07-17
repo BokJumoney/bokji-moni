@@ -23,6 +23,7 @@ class ChatGraphState(TypedDict, total=False):
     conversation_id: str
     subscription_action: str
     subscription_stage: str
+    subscription_guard_message: str
     policy_query: str
     candidate_policy_ids: list[int]
     selected_policy_id: int
