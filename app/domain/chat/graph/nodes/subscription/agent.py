@@ -42,15 +42,28 @@ _tool_prompt = ChatPromptTemplate.from_messages(
 - 신규·폐지 정책 소식 설정, 전체 알림 일시 중지/재개:
   request_notification_setting_change
 
+request_notification_setting_change는 사용자가 '전체', '모든', '전부',
+'신규 정책', '폐지 정책', '정책 소식'처럼 전역 범위를 명시했을 때만 호출한다.
+정책명이 하나라도 있으면 반드시 search_subscription_policies를 호출한다.
+'이거', '그 정책'은 이전 대화에서 가리키는 정책명을 찾아 policy_query로 사용한다.
 정책 검색어에서 '알려줘', '구독해줘', '해지해줘' 같은 불필요한 표현은 제거한다.
 사용자 ID나 대화방 ID를 추측하거나 도구 인자로 만들지 마라.""",
         ),
-        ("human", "{question}"),
+        (
+            "human",
+            """현재 질문:
+{question}
+
+이전 대화:
+{chat_history}""",
+        ),
     ]
 )
 
 _POSITIVE = {"네", "예", "응", "좋아", "확인", "등록", "해줘", "맞아", "yes", "y"}
 _NEGATIVE = {"아니", "아니요", "취소", "그만", "됐어", "no", "n"}
+_GLOBAL_SCOPE_MARKERS = ("전체", "모든", "전부", "신규", "폐지", "정책 소식")
+_DEICTIC_POLICY_WORDS = {"이거", "그거", "이 정책", "그 정책", "해당 정책"}
 
 
 def _normalized_answer(text: str) -> str:
@@ -65,6 +78,80 @@ def _is_positive(text: str) -> bool:
 def _is_negative(text: str) -> bool:
     answer = _normalized_answer(text)
     return answer in _NEGATIVE or answer.startswith("아니") or "취소" in answer
+
+
+def _is_explicit_global_request(question: str) -> bool:
+    """전역 알림 설정은 사용자가 범위를 명시한 경우에만 허용한다."""
+    normalized = question.replace(" ", "")
+    return any(marker.replace(" ", "") in normalized for marker in _GLOBAL_SCOPE_MARKERS)
+
+
+def _extract_policy_query(question: str) -> str | None:
+    """명시된 정책명 앞부분을 보수적으로 추출한다.
+
+    자연어 전체를 정책 검색에 넘기면 정확/부분 일치가 실패하기 쉬우므로
+    '알림', '구독', '마감 전에 알려줘' 앞의 명사구만 남긴다. 지시어만 남는
+    경우에는 이전 대화가 필요하므로 None을 반환한다.
+    """
+    text = question.strip()
+    for separator in ("알림", "구독", "마감 전에", "마감전", "마감 전"):
+        if separator in text:
+            text = text.split(separator, 1)[0]
+            break
+    text = re.sub(r"(?:에\s*대해(?:서)?|에\s*관해(?:서)?|을|를|은|는|이|가)\s*$", "", text)
+    text = text.strip(" ,.!?'")
+    if not text or text in _DEICTIC_POLICY_WORDS:
+        return None
+    # 전역 범위 표현은 특정 정책 검색어로 사용하지 않는다.
+    if _is_explicit_global_request(text):
+        return None
+    return text
+
+
+def _guard_tool_selection(response: AIMessage, question: str) -> tuple[AIMessage, str]:
+    """LLM의 전역 설정 오선택이 즉시 DB 변경으로 이어지지 않게 교정한다."""
+    if len(response.tool_calls) != 1:
+        return response, ""
+    call = response.tool_calls[0]
+    if call.get("name") != "request_notification_setting_change":
+        return response, ""
+    if _is_explicit_global_request(question):
+        return response, ""
+
+    policy_query = _extract_policy_query(question)
+    if policy_query:
+        logger.info(
+            "특정 정책 요청의 전역 설정 도구 선택 교정: query=%s", policy_query
+        )
+        corrected = AIMessage(
+            content="",
+            tool_calls=[
+                {
+                    "name": "search_subscription_policies",
+                    "args": {"policy_query": policy_query, "action": "subscribe"},
+                    "id": call.get("id") or "corrected-policy-search",
+                    "type": "tool_call",
+                }
+            ],
+        )
+        return corrected, ""
+
+    # '이거 알림 보내줘'처럼 정책을 확정하지 못한 요청은 전역 설정으로 확대
+    # 해석하지 않고 사용자에게 정책명을 다시 확인한다.
+    return AIMessage(content=""), (
+        "특정 정책의 알림을 원하시는지, 전체 정책 소식을 원하시는지 확인이 필요합니다. "
+        "특정 정책이라면 정책명을 알려주세요."
+    )
+
+
+def _history_text(chat_history: list[dict]) -> str:
+    """정책 지시어 해결에는 최근 assistant 답변만 사용한다."""
+    contents = [
+        str(message.get("content", ""))
+        for message in chat_history
+        if message.get("role") == "assistant"
+    ]
+    return "\n".join(contents[-3:])
 
 
 def _format_policy(policy, index: int | None = None) -> str:
@@ -383,8 +470,35 @@ async def handle_active_subscription(state: ChatGraphState) -> dict:
 
 async def subscription_tool_agent(state: ChatGraphState) -> dict:
     """신규 구독 요청을 한 개의 허용된 도구 호출로 변환한다."""
-    response = await _tool_chain.ainvoke({"question": state["question"]})
-    return {"messages": [response]}
+    question = state["question"]
+    chat_history = state.get("chat_history", [])
+
+    # '이거 알림 보내줘'처럼 지시어만 있는 경우 최근 답변에 실제 DB 정책명이
+    # 있으면 명시적인 질문으로 바꿔 도구 선택과 서버 검증이 같은 대상을 보게 한다.
+    if any(word in question for word in _DEICTIC_POLICY_WORDS):
+        history_text = _history_text(chat_history)
+
+        def find_policy_name():
+            with Session(engine) as session:
+                return SubscriptionRepository(session).find_policy_name_in_text(
+                    history_text
+                )
+
+        policy_name = await run_in_threadpool(find_policy_name)
+        if policy_name:
+            question = f"{policy_name} 알림을 보내줘"
+
+    response = await _tool_chain.ainvoke(
+        {
+            "question": question,
+            "chat_history": chat_history,
+        }
+    )
+    guarded, guard_message = _guard_tool_selection(response, question)
+    return {
+        "messages": [guarded],
+        "subscription_guard_message": guard_message,
+    }
 
 
 def route_tool_call(state: ChatGraphState) -> Literal["tools", "fallback"]:
@@ -395,9 +509,10 @@ def route_tool_call(state: ChatGraphState) -> Literal["tools", "fallback"]:
     return "fallback"
 
 
-async def subscription_tool_fallback(_: ChatGraphState) -> dict:
+async def subscription_tool_fallback(state: ChatGraphState) -> dict:
     return _subscription_result(
-        "구독 요청을 이해하지 못했습니다. "
+        state.get("subscription_guard_message")
+        or "구독 요청을 이해하지 못했습니다. "
         "구독할 정책명 또는 변경할 알림 설정을 알려주세요."
     )
 
@@ -469,6 +584,14 @@ async def finalize_subscription_tool(state: ChatGraphState) -> dict:
         return _subscription_result(await run_in_threadpool(create_dialog))
 
     if kind == "notification_setting_change":
+        # LLM 도구 선택과 별개로 실제 DB 변경 직전에 전역 범위 표현을 다시
+        # 확인한다. 이 검증을 통과하지 못하면 설정을 변경하지 않는다.
+        if not _is_explicit_global_request(state.get("question", "")):
+            return _subscription_result(
+                "전체 정책 알림 설정은 범위를 명확히 말씀해 주세요. "
+                "특정 정책 알림이라면 정책명을 알려주세요."
+            )
+
         def change_setting():
             with Session(engine) as session:
                 return _apply_notification_setting(
