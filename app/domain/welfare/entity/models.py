@@ -21,7 +21,10 @@ class WelfarePolicy(SQLModel, table=True):
     # 정형 메타데이터
     # 외부 복지 데이터의 서비스 ID를 정책의 안정적인 업무 식별자로 사용한다.
     # 구독은 청크가 아니라 정책 자체를 참조해야 하므로 중복을 허용하지 않는다.
-    service_id: str = Field(index=True, unique=True)
+    # 과거 DB에는 청크별 중복 행이 존재하므로 현재 단계에서는 DB unique 제약을
+    # 강제하지 않는다. 신규 적재기는 정책별 한 행만 생성하고 조회 시 중복을
+    # 제거하며, 별도 데이터 정리 후 unique 제약을 도입한다.
+    service_id: str = Field(index=True)
     service_name: str = Field(index=True)
     department: str = Field(default="", index=True)
     year: int = Field(default=0, index=True)
