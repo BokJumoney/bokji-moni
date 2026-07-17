@@ -30,8 +30,8 @@ class Settings(BaseSettings):
     VECTOR_COLLECTION_NAME: str = "welfare_policy_vector"
     VECTOR_EMBEDDING_MODEL_SNOW: str = "dragonkue/snowflake-arctic-embed-l-v2.0-ko"
 
-    # 신청서 
-    VECTOR_FORM_COLLECTION_NAME: str = "welfare_forms"
+    # PDF
+    VECTOR_PDF_COLLECTION_NAME: str = "welfare_policy_pdf_vector"
 
     # CSV 적재
     WELFARE_CSV_PATH: str = "data/welfare_policy_details.csv"
