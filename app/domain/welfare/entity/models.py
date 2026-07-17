@@ -21,3 +21,9 @@ class WelfarePolicy(SQLModel, table=True):
 
     # 본문 (서술형)
     page_content: str
+
+class Policy(SQLModel, table=True):
+    __tablename__ = "policies"
+
+    service_id: str = Field(primary_key=True)
+    service_name: str = Field(max_length=25)

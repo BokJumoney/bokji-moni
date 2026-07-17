@@ -17,10 +17,11 @@ class Settings(BaseSettings):
 
     # Ollama (로컬 LLM)
     LOCAL_MODEL: str = "exaone3.5"
-    LOCLAL_LLM_URL: str = "http://localhost:11434"
+    LOCAL_LLM_URL: str = "http://localhost:11434"
 
     # OpenAI (임베딩용)
     OPENAI_API_KEY: str = ""
+    OPENAI_MODEL: str
 
     # 공공데이터포털 (공데포 저소득 복지 정책 API 키)
     WELFARE_API_KEY: str = ""
@@ -46,7 +47,7 @@ class Settings(BaseSettings):
     SESSION_ABSOLUTE_HOURS: int = 24
     SESSION_TOUCH_INTERVAL_SECONDS: int = 300
 
-    openai_api_key: str
+    TAVILY_API_KEY: str
 
     # CORS 허용 origin
     ALLOWED_ORIGINS: list[str] = [
