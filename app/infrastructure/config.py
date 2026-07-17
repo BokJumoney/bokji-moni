@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     # OpenAI (임베딩용)
     OPENAI_API_KEY: str = ""
 
+    TAVILY_API_KEY:str ="TAVILY_API_KEY"
+
     # pgvector / Vectorstore
     VECTOR_COLLECTION_NAME: str = "welfare_policies"
     VECTOR_EMBEDDING_MODEL: str = "text-embedding-3-small"
