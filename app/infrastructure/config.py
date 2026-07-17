@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     LOCAL_LLM_URL: str = "http://localhost:11434"
 
     # OpenAI (임베딩용)
+    OPENAI_MODEL: str = "gpt-4o-mini"
     OPENAI_API_KEY: str = ""
 
     # pgvector / Vectorstore

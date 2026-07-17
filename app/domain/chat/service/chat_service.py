@@ -25,6 +25,7 @@ from app.domain.chat.dto.response import (
 )
 from app.domain.chat.entity.models import Conversation, Message
 from app.domain.chat.graph.chat_graph import graph
+from app.domain.chat.graph.tracing import LangGraphTraceCallback
 from app.domain.chat.repository import ConversationRepository
 from app.domain.chat.utils import (
     decode_cursor,
@@ -91,6 +92,17 @@ class ChatService:
         )
 
         # 4. LangGraph 호출 (DB transaction 밖에서)
+        trace_id = uuid.uuid4().hex
+        graph_callback = LangGraphTraceCallback(
+            trace_id=trace_id,
+            conversation_id=str(conversation.id),
+        )
+        logger.info(
+            "LangGraph 실행 시작: trace_id=%s conversation_id=%s mode=%s",
+            trace_id,
+            conversation.id,
+            conversation_mode,
+        )
         try:
             result = await graph.ainvoke(
                 {
@@ -101,14 +113,29 @@ class ChatService:
                     "user_id": str(user_id),
                     "conversation_id": str(conversation.id),
                     "conversation_mode": conversation_mode,
-                }
+                },
+                config={
+                    "callbacks": [graph_callback],
+                    "tags": ["chat_request"],
+                    "metadata": {"trace_id": trace_id},
+                },
             )
             ai_content = result.get("generation", "")
             # 그래프가 실제로 처리한 경로를 메시지 이력에 남겨 운영 중 구독
             # 대화를 일반 대화와 구분할 수 있게 한다.
             intent = str(result.get("route") or "General").title()
+            logger.info(
+                "LangGraph 실행 완료: trace_id=%s conversation_id=%s route=%s",
+                trace_id,
+                conversation.id,
+                result.get("route"),
+            )
         except Exception as exc:  # noqa: BLE001
-            logger.exception("LangGraph 호출 실패: conversation_id=%s", conversation.id)
+            logger.exception(
+                "LangGraph 호출 실패: trace_id=%s conversation_id=%s",
+                trace_id,
+                conversation.id,
+            )
             # 안전한 오류 메시지 저장 (원문 노출 금지)
             ai_content = "죄송합니다. 답변을 생성하는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요."
             intent = "Error"

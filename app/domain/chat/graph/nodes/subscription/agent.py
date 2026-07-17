@@ -25,7 +25,7 @@ from app.domain.subscription.service.subscription_service import (
     PolicySubscriptionService,
 )
 from app.infrastructure.db.connection import engine
-from app.infrastructure.llm.ollama import get_llm
+from app.infrastructure.llm.gpt import get_llm_gpt
 from app.infrastructure.vectorstore.setup_vectorstore import get_ensemble_retriever
 
 logger = logging.getLogger(__name__)
@@ -213,7 +213,7 @@ SUBSCRIPTION_TOOLS = [
     request_notification_setting_change,
 ]
 
-_tool_chain = _tool_prompt | get_llm().bind_tools(
+_tool_chain = _tool_prompt | get_llm_gpt().bind_tools(
     SUBSCRIPTION_TOOLS,
     tool_choice="any",
 )
