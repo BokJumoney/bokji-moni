@@ -34,6 +34,28 @@ def init_db() -> None:
         conn.commit()
 
     SQLModel.metadata.create_all(engine)
+    _ensure_welfare_subscription_columns()
+
+
+def _ensure_welfare_subscription_columns() -> None:
+    """기존 개발 DB의 welfare_policies에 구독용 컬럼을 비파괴적으로 추가한다.
+
+    SQLModel.create_all()은 새 테이블만 만들고 기존 테이블에 컬럼을 추가하지
+    않는다. 정식 마이그레이션 도구를 도입하기 전까지 IF NOT EXISTS DDL로
+    스키마 차이만 보완하며, 기존 정책 행을 삭제하거나 변경하지 않는다.
+    """
+    statements = (
+        "ALTER TABLE welfare_policies ADD COLUMN IF NOT EXISTS application_deadline DATE",
+        "ALTER TABLE welfare_policies ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'active'",
+        "ALTER TABLE welfare_policies ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP",
+        "ALTER TABLE welfare_policies ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP",
+        "ALTER TABLE welfare_policies ADD COLUMN IF NOT EXISTS abolished_at TIMESTAMP",
+        "CREATE INDEX IF NOT EXISTS ix_welfare_policies_application_deadline ON welfare_policies (application_deadline)",
+        "CREATE INDEX IF NOT EXISTS ix_welfare_policies_status ON welfare_policies (status)",
+    )
+    with engine.begin() as conn:
+        for statement in statements:
+            conn.execute(text(statement))
 
 
 def get_session():

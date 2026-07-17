@@ -15,8 +15,9 @@ from sqlmodel import Session, select
 
 from app.common.timezone import now_kst
 from app.domain.welfare.entity.models import WelfarePolicy
+from app.domain.welfare.service.deadline_extractor import extract_application_deadline
 from app.infrastructure.config import settings
-from app.infrastructure.db.connection import get_session
+from app.infrastructure.db.connection import engine, get_session
 from app.infrastructure.vectorstore.setup_vectorstore import (
     get_vectorstore,
     _init_bm25_retriever,
@@ -111,6 +112,11 @@ def _sync_to_sqlmodel(chunks: list[Document]) -> None:
 
         for policy in policies.values():
             m = policy["metadata"]
+            combined_content = "\n\n".join(policy["contents"])
+            extracted_deadline = extract_application_deadline(
+                combined_content,
+                m["year"] or now_kst().year,
+            )
             existing = session.exec(
                 select(WelfarePolicy).where(
                     WelfarePolicy.service_id == m["service_id"]
@@ -125,14 +131,22 @@ def _sync_to_sqlmodel(chunks: list[Document]) -> None:
                 "life_cycle": m["life_cycle"],
                 "topic": m["topic"],
                 "household_type": m["household_type"],
-                "page_content": "\n\n".join(policy["contents"]),
+                "page_content": combined_content,
             }
             if existing is None:
-                session.add(WelfarePolicy(service_id=m["service_id"], **values))
+                session.add(
+                    WelfarePolicy(
+                        service_id=m["service_id"],
+                        application_deadline=extracted_deadline,
+                        **values,
+                    )
+                )
             else:
                 # 관리자가 입력한 마감일과 폐지 상태는 CSV 재적재로 덮지 않는다.
                 for field, value in values.items():
                     setattr(existing, field, value)
+                if existing.application_deadline is None and extracted_deadline is not None:
+                    existing.application_deadline = extracted_deadline
                 existing.updated_at = now_kst()
                 session.add(existing)
         session.commit()
@@ -192,6 +206,15 @@ def ensure_ingested() -> None:
         # BM25 retriever는 매 기동 시 재구성 필요 (in-memory)
         chunks = load_chunks_for_bm25()
         _init_bm25_retriever(chunks)
+        # 기존 정형 정책 테이블은 재적재하지 않더라도 새로 구조화할 수 있는
+        # 명확한 신청 마감일을 채운다. 관리자 입력값은 백필이 덮어쓰지 않는다.
+        from app.domain.welfare.service.deadline_extractor import (
+            backfill_application_deadlines,
+        )
+
+        with Session(engine) as session:
+            updated_policies, _ = backfill_application_deadlines(session)
+        print(f"정책 마감일 백필 완료: {updated_policies}개 정책")
         return
 
     print("Vectorstore가 비어있습니다. CSV 적재를 시작합니다...")
