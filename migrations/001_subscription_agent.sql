@@ -9,15 +9,15 @@ ALTER TABLE welfare_policies
     ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     ADD COLUMN IF NOT EXISTS abolished_at TIMESTAMP;
 
--- 과거 적재기는 정책 청크마다 행을 만들었다. 구독 FK를 만들기 전에 같은
--- service_id 중 가장 작은 id만 남겨 정책별 한 행으로 정리한다.
-DELETE FROM welfare_policies duplicated
-USING welfare_policies retained
-WHERE duplicated.service_id = retained.service_id
-  AND duplicated.id > retained.id;
-
-CREATE UNIQUE INDEX IF NOT EXISTS ix_welfare_policies_service_id_unique
+-- 과거 적재기는 정책 청크마다 행을 만들었으므로 여기서는 데이터를 삭제하거나
+-- unique 제약을 강제하지 않는다. 구독 관계를 보존하는 별도 정리 마이그레이션을
+-- 수행하기 전까지 조회 계층에서 service_id 중복을 제거한다.
+CREATE INDEX IF NOT EXISTS ix_welfare_policies_service_id
     ON welfare_policies (service_id);
+CREATE INDEX IF NOT EXISTS ix_welfare_policies_application_deadline
+    ON welfare_policies (application_deadline);
+CREATE INDEX IF NOT EXISTS ix_welfare_policies_status
+    ON welfare_policies (status);
 
 CREATE TABLE IF NOT EXISTS policy_subscriptions (
     id UUID PRIMARY KEY,
