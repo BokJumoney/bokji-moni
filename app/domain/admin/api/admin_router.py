@@ -1,5 +1,5 @@
-from typing import Literal
 from enum import Enum
+from typing import Literal
 
 from fastapi import APIRouter, Depends, File, UploadFile, status
 from sqlmodel import Session
@@ -12,6 +12,7 @@ from app.domain.admin.service.admin_service import AdminService
 from app.domain.admin.service.extract_data_service import ExtractDataService
 from app.domain.admin.service.policy_embedding_service import PolicyEmbeddingService
 from app.domain.admin.service.cmd_exec_service import CmdExecService
+from app.domain.user.dependencies import get_current_admin
 from app.domain.admin.dependancies import get_admin_service
 from pathlib import Path
 from app.infrastructure.db.connection import get_session
@@ -20,8 +21,8 @@ from app.domain.welfare.service.rag_update import service as rag_service
 router = APIRouter(
     prefix="/admin",
     tags=["admin"],
+    dependencies=[Depends(get_current_admin)],
 )
-
 
 class Tags(str, Enum):
     ADMIN = "admin"

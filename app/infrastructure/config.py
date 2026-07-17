@@ -21,7 +21,14 @@ class Settings(BaseSettings):
 
     # OpenAI (임베딩용)
     OPENAI_API_KEY: str = ""
-    OPENAI_MODEL: str
+    OPENAI_MODEL: str = "gpt-4o-mini"
+
+
+    TAVILY_API_KEY:str ="TAVILY_API_KEY"
+
+    # pgvector / Vectorstore
+    VECTOR_COLLECTION_NAME: str = "welfare_policies"
+    VECTOR_EMBEDDING_MODEL: str = "text-embedding-3-small"
 
     # 공공데이터포털 (공데포 저소득 복지 정책 API 키)
     WELFARE_API_KEY: str = ""
