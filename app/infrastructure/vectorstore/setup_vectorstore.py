@@ -9,29 +9,35 @@ from functools import lru_cache
 
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers import EnsembleRetriever
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import OpenAIEmbeddings
 from langchain_postgres import PGVector
+from langchain_huggingface import HuggingFaceEmbeddings
 from app.infrastructure.config import settings
 
 embedding_snow = HuggingFaceEmbeddings(model_name=settings.VECTOR_EMBEDDING_MODEL_SNOW)
 
 
 # ── 임베딩 ──────────────────────────────────────────────
-# embedding = OpenAIEmbeddings(
-#     model=settings.VECTOR_EMBEDDING_MODEL,
-#     # api_key=settings.OPENAI_API_KEY, # 시스템 변수로 설정되어있음
-# )
-
+embedding = OpenAIEmbeddings(
+    model=settings.VECTOR_EMBEDDING_MODEL,
+)
 
 # ── PGVector ────────────────────────────────────────────
 @lru_cache(maxsize=1) # @lru_cache: 같은 인수를 전달했던 호출 결과가 이미 캐시되어 있으면 함수를 실행하지 않고 캐시 결과를 반환
-def get_vectorstore() -> PGVector:
+def get_vectorstore(collection_name) -> PGVector:
     """langchain_postgres.PGVector 인스턴스를 반환 (싱글톤)."""
     return PGVector(
         connection=settings.database_url,
         embeddings=embedding_snow,
-        collection_name=settings.VECTOR_COLLECTION_NAME,
+        collection_name=collection_name,
+    )
+
+@lru_cache(maxsize=1)
+def get_huggingface_vectorstore() -> PGVector:
+    return PGVector(
+        connection=settings.database_url,
+        embeddings=embedding_snow,
+        collection_name=settings.VECTOR_PDF_COLLECTION_NAME,
     )
 
 # 신청서 db
@@ -40,7 +46,7 @@ def get_form_vectorstore() -> PGVector:
     return PGVector(
         connection=settings.database_url,
         embeddings=embedding,
-        collection_name=settings.VECTOR_FORM_COLLECTION_NAME,
+        collection_name=settings.VECTOR_PDF_COLLECTION_NAME,
     )
 
 # ── BM25 (키워드 검색) ─────────────────────────────────
@@ -77,7 +83,7 @@ def get_ensemble_retriever() -> EnsembleRetriever:
     """
     global _ensemble_retriever
     if _ensemble_retriever is None:
-        pgvector_retriever = get_vectorstore().as_retriever(
+        pgvector_retriever = get_vectorstore(settings.VECTOR_COLLECTION_NAME).as_retriever(
             search_kwargs={"k": 3}
         )
         bm25 = get_bm25_retriever()
