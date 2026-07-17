@@ -9,12 +9,14 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr
 
+from app.domain.user.entity.models import UserRole
+
 
 class AuthUserResponse(BaseModel):
     id: UUID
     email: EmailStr
     name: str
-    role: str
+    role: UserRole
 
 
 class LoginResponse(BaseModel):
