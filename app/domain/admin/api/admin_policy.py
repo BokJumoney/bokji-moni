@@ -3,10 +3,12 @@ from sqlmodel import Session, select
 
 from app.domain.admin.entity.models import PdfWelfareList
 from app.infrastructure.db.connection import get_session
+from app.domain.user.dependencies import get_current_admin
 
 router = APIRouter(
     prefix="/admin",
-    tags=["admin"]
+    tags=["admin"],
+    dependencies=[Depends(get_current_admin)],
 )
 
 @router.get("/policies")
