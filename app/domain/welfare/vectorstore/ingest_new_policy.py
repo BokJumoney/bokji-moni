@@ -14,6 +14,7 @@ from app.domain.welfare.entity.models import WelfarePolicy
 from app.domain.welfare.service import chunker
 from app.infrastructure.db.connection import get_session
 from app.infrastructure.vectorstore.setup_vectorstore import get_vectorstore
+from app.infrastructure.config import settings
 
 #청킹된 df -> document로
 def parse_to_document( chunked_df:DataFrame ) -> list[Document]:
@@ -64,7 +65,7 @@ def ingest_to_pgvector(chunked_df: DataFrame) -> int:
         return 0
 
     # 1. PGVector에 신규 청크 추가
-    vectorstore = get_vectorstore()
+    vectorstore = get_vectorstore(settings.VECTOR_COLLECTION_NAME)
     ids = [f"{chunk.metadata["service_id"]}-{chunk.metadata["chunk_type"]}" for chunk in chunks]
     vectorstore.add_documents(chunks, ids=ids)
     print(f"[new policy]PGVector 적재 완료: 총 {len(chunks)}개 청크")
@@ -87,5 +88,5 @@ def delete_from_pgvector(service_ids: list[str]) -> None:
         for service_id in service_ids
         for chunk_type in chunker.CHUNK_FIELD_MAP
     ]
-    get_vectorstore().delete(ids=ids)
+    get_vectorstore(settings.VECTOR_COLLECTION_NAME).delete(ids=ids)
     print(f"[expired policy]PGVector 삭제 완료: 정책 {len(service_ids)}건")

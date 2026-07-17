@@ -115,7 +115,7 @@ def ingest_to_pgvector(csv_path: str | None = None) -> int:
     reset_retrievers()
 
     # 1. PGVector 적재
-    vectorstore = get_vectorstore()
+    vectorstore = get_vectorstore(settings.VECTOR_COLLECTION_NAME)
     total = 0
     ids = []
     for i in range(0, len(chunks), 100):
@@ -138,7 +138,7 @@ def ingest_to_pgvector(csv_path: str | None = None) -> int:
 def is_ingested() -> bool:
     """PGVector 컬렉션에 문서가 존재하는지 확인."""
     try:
-        vectorstore = get_vectorstore()
+        vectorstore = get_vectorstore(settings.VECTOR_COLLECTION_NAME)
         results = vectorstore.similarity_search("복지", k=1)
         return len(results) > 0
     except Exception:

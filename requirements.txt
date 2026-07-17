@@ -1,3 +1,10 @@
+fastapi
+uvicorn
+pandas
+matplotlib
+openpyxl
+folium
+plotly
 aiohappyeyeballs==2.7.1
 aiohttp==3.14.1
 aiosignal==1.4.0
@@ -50,6 +57,7 @@ langchain-openai==1.3.5
 langchain-postgres==0.0.17
 langchain-protocol==0.0.18
 langchain-text-splitters==1.1.2
+langchain-huggingface
 langgraph==1.2.9
 langgraph-checkpoint==4.1.1
 langgraph-prebuilt==1.1.0
@@ -128,3 +136,4 @@ xxhash==3.8.1
 xyzservices==2026.3.0
 yarl==1.24.2
 zstandard==0.25.0
+sentence-transformers
