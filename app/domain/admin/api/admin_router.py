@@ -1,4 +1,8 @@
 from typing import Literal
+from enum import Enum
+
+from fastapi import APIRouter, Depends, File, UploadFile, status
+from sqlmodel import Session
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile, status
 
@@ -10,11 +14,18 @@ from app.domain.admin.service.policy_embedding_service import PolicyEmbeddingSer
 from app.domain.admin.service.cmd_exec_service import CmdExecService
 from app.domain.admin.dependancies import get_admin_service
 from pathlib import Path
+from app.infrastructure.db.connection import get_session
+from app.domain.welfare.service.rag_update import service as rag_service
 
 router = APIRouter(
     prefix="/admin",
     tags=["admin"],
 )
+
+
+class Tags(str, Enum):
+    ADMIN = "admin"
+    USER = "user"
 
 def get_admin_file_service() -> AdminFileService:
     return AdminFileService()
@@ -139,3 +150,6 @@ async def upload_hwp_file(
 #     service: AdminFileService = Depends(get_admin_file_service),
 # ) -> FileDeleteResponse:
 #     return service.delete_file(file_id)
+@router.get("/api_call", tags=[Tags.ADMIN])
+async def rag_api_call(session: Session = Depends(get_session)):
+    await rag_service.api_call_rag_update(session)
