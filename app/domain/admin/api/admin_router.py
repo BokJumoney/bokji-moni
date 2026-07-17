@@ -1,18 +1,24 @@
+from enum import Enum
+
 from fastapi import APIRouter, Depends, File, UploadFile, status
 from sqlmodel import Session
-from app.infrastructure.db.connection import get_session
 
 from app.domain.admin.dto.response import FileDeleteResponse, FileUploadResponse
 from app.domain.admin.service.admin_file_service import AdminFileService
 from app.domain.admin.service.extract_data_service import ExtractDataService
 from app.domain.admin.service.policy_embedding_service import PolicyEmbeddingService
 from app.domain.admin.service.cmd_exec_service import CmdExecService
+from app.infrastructure.db.connection import get_session
+from app.domain.welfare.service.rag_update import service as rag_service
 
 router = APIRouter(
     prefix="/admin",
     tags=["admin"],
 )
 
+class Tags(str, Enum):
+    ADMIN = "admin"
+    USER = "user"
 
 def get_admin_file_service() -> AdminFileService:
     return AdminFileService()
@@ -64,6 +70,10 @@ async def upload_file(
 )
 def delete_file(
     file_id: str,
-    service: AdminFileService = Depends(get_admin_file_service),
+    admin_service: AdminFileService = Depends(get_admin_file_service),
 ) -> FileDeleteResponse:
-    return service.delete_file(file_id)
+    return admin_service.delete_file(file_id)
+
+@router.get("/api_call", tags=[Tags.ADMIN])
+async def rag_api_call(session: Session = Depends(get_session)):
+    await rag_service.api_call_rag_update(session)
