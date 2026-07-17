@@ -12,11 +12,14 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_postgres import PGVector
 
 from app.infrastructure.config import settings
+from langchain_huggingface import HuggingFaceEmbeddings
+from app.infrastructure.config import settings
 
-_embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+embedding_snow = HuggingFaceEmbeddings(model_name=settings.VECTOR_EMBEDDING_MODEL_SNOW)
+
 
 pdf_vectorstore = PGVector(
-    embeddings=_embeddings,
+    embeddings=embedding_snow,
     collection_name="welfare_policy_pdf_vector",
     connection=settings.database_url,
 )
