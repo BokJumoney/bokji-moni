@@ -128,7 +128,7 @@ async def upload_pdf_file(
         status_code=status.HTTP_201_CREATED
 )
 async def upload_hwp_file(
-    policy_uuid: str = Form(...),
+    service_id: str = Form(...),
     file: UploadFile = File(...),
     admin_file_service: AdminFileService = Depends(get_admin_file_service),
     admin_service: AdminService = Depends(get_admin_service),
@@ -138,7 +138,7 @@ async def upload_hwp_file(
     origin_file_name = Path(store_result["originalFilename"]).stem
     file_uuid = Path(store_result["storedFilename"]).stem
     # DB 저장 로직(uuid 이름, 원본 파일 이름)
-    admin_service.save_hwp_form(policy_uuid, origin_file_name, file_uuid)
+    admin_service.save_hwp_form(service_id, origin_file_name, file_uuid)
 
     return store_result
 

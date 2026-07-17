@@ -22,6 +22,7 @@ from langchain_openai import ChatOpenAI
 from app.domain.chat.graph.state2 import ChatState
 from app.infrastructure.config import settings
 
+
 llm = ChatOpenAI(
     model="gpt-4o",
     api_key=settings.openai_api_key,
