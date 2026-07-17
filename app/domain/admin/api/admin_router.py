@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Literal
 
 from fastapi import APIRouter, Depends, File, UploadFile, status
 from sqlmodel import Session
