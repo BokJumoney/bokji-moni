@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     # pgvector / Vectorstore
     VECTOR_COLLECTION_NAME: str = "welfare_policies"
     VECTOR_EMBEDDING_MODEL: str = "text-embedding-3-small"
+    VECTOR_EMBEDDING_HUGGINGFACE_MODEL: str = "dragonkue/snowflake-arctic-embed-l-v2.0-ko"
 
     # 신청서 
     VECTOR_FORM_COLLECTION_NAME: str = "welfare_forms"

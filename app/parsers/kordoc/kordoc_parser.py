@@ -4,7 +4,7 @@ from pathlib import Path
 # HWPX 원본 파싱
 def parse_hwpx(hwpx_path: str) -> str:
 
-    output_path = Path("output/output3.md")
+    output_path = Path("output/application_md")
 
     output_path.parent.mkdir(
         parents=True,

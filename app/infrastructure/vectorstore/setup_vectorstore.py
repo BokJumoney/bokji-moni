@@ -11,6 +11,7 @@ from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers import EnsembleRetriever
 from langchain_openai import OpenAIEmbeddings
 from langchain_postgres import PGVector
+from langchain_huggingface import HuggingFaceEmbeddings
 
 from app.infrastructure.config import settings
 
@@ -20,6 +21,15 @@ embedding = OpenAIEmbeddings(
     # api_key=settings.OPENAI_API_KEY, # 시스템 변수로 설정되어있음
 )
 
+huggingface_embeddings = HuggingFaceEmbeddings(
+    model_name=settings.VECTOR_EMBEDDING_HUGGINGFACE_MODEL,
+    model_kwargs={
+        "device": "cpu",
+    },
+    encode_kwargs={
+        "normalize_embeddings": True,
+    },
+)
 
 # ── PGVector ────────────────────────────────────────────
 @lru_cache(maxsize=1) # @lru_cache: 같은 인수를 전달했던 호출 결과가 이미 캐시되어 있으면 함수를 실행하지 않고 캐시 결과를 반환
@@ -28,6 +38,14 @@ def get_vectorstore() -> PGVector:
     return PGVector(
         connection=settings.database_url,
         embeddings=embedding,
+        collection_name=settings.VECTOR_COLLECTION_NAME,
+    )
+
+@lru_cache(maxsize=1)
+def get_huggingface_vectorstore() -> PGVector:
+    return PGVector(
+        connection=settings.database_url,
+        embeddings=huggingface_embeddings,
         collection_name=settings.VECTOR_COLLECTION_NAME,
     )
 
