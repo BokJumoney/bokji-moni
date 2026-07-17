@@ -21,6 +21,7 @@ class Settings(BaseSettings):
 
     # OpenAI (임베딩용)
     OPENAI_API_KEY: str = ""
+    OPENAI_MODEL: str = "gpt-4o-mini"
 
     # 공공데이터포털 (공데포 저소득 복지 정책 API 키)
     WELFARE_API_KEY: str = ""
