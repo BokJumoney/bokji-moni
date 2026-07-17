@@ -3,10 +3,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from sqlmodel import Session
 from app.infrastructure.db.connection import get_session
+from app.domain.user.dependencies import get_current_admin
 
 router = APIRouter(
     prefix="/admin",
-    tags=["admin"]
+    tags=["admin"],
+    dependencies=[Depends(get_current_admin)],
 )
 
 @router.get("/policies")

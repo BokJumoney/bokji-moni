@@ -7,10 +7,12 @@ from app.domain.admin.service.admin_file_service import AdminFileService
 from app.domain.admin.service.extract_data_service import ExtractDataService
 from app.domain.admin.service.policy_embedding_service import PolicyEmbeddingService
 from app.domain.admin.service.cmd_exec_service import CmdExecService
+from app.domain.user.dependencies import get_current_admin
 
 router = APIRouter(
     prefix="/admin",
     tags=["admin"],
+    dependencies=[Depends(get_current_admin)],
 )
 
 
