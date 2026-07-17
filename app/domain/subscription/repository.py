@@ -29,6 +29,12 @@ class SubscriptionRepository:
             select(WelfarePolicy).where(WelfarePolicy.service_id == service_id)
         ).first()
 
+    def find_policy_name_in_text(self, text: str) -> str | None:
+        """이전 답변에 실제 정책명이 포함됐는지 가장 긴 이름부터 찾는다."""
+        names = self.session.exec(select(WelfarePolicy.service_name).distinct()).all()
+        matches = [name for name in names if name and name in text]
+        return max(matches, key=len) if matches else None
+
     def get_policies(self, policy_ids: list[int]) -> list[WelfarePolicy]:
         if not policy_ids:
             return []
@@ -52,18 +58,17 @@ class SubscriptionRepository:
                         WelfarePolicy.service_id == normalized,
                     )
                 )
-                .limit(limit)
+                .order_by(WelfarePolicy.id)
+                .limit(limit * 10)
             ).all()
         )
-        if len(exact) >= limit:
-            return exact
-
         partial = list(
             self.session.exec(
                 select(WelfarePolicy)
                 .where(WelfarePolicy.status == "active")
                 .where(WelfarePolicy.service_name.ilike(f"%{normalized}%"))
-                .limit(limit)
+                .order_by(WelfarePolicy.id)
+                .limit(limit * 20)
             ).all()
         )
         # 과거 청크 단위 적재 데이터가 남아 있더라도 사용자에게 같은 정책을
