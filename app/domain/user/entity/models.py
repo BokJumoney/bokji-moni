@@ -7,6 +7,7 @@
 """
 import uuid
 from datetime import date, datetime
+from enum import Enum
 from typing import Optional
 
 from sqlalchemy import BigInteger, CheckConstraint, Column, ForeignKey
@@ -18,6 +19,13 @@ from app.common.timezone import now_kst
 
 def _utcnow() -> datetime:
     return now_kst()
+
+
+class UserRole(str, Enum):
+    """서비스에서 지원하는 사용자 역할."""
+
+    USER = "user"
+    ADMIN = "admin"
 
 
 class User(SQLModel, table=True):
@@ -32,7 +40,7 @@ class User(SQLModel, table=True):
     email: str = Field(max_length=320, unique=True, index=True, nullable=False)
     password_hash: str = Field(nullable=False)
     name: str = Field(max_length=100, nullable=False)
-    role: str = Field(default="user", max_length=20, nullable=False)
+    role: str = Field(default=UserRole.USER.value, max_length=20, nullable=False)
     is_active: bool = Field(default=True, nullable=False)
     created_at: datetime = Field(
         default_factory=_utcnow,
@@ -41,6 +49,13 @@ class User(SQLModel, table=True):
     updated_at: datetime = Field(
         default_factory=_utcnow,
         nullable=False,
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "role IN ('user', 'admin')",
+            name="users_role_allowed",
+        ),
     )
 
 
