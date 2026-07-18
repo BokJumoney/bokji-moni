@@ -20,6 +20,7 @@ embedding_snow = HuggingFaceEmbeddings(model_name=settings.VECTOR_EMBEDDING_MODE
 # ── 임베딩 ──────────────────────────────────────────────
 embedding = OpenAIEmbeddings(
     model=settings.VECTOR_EMBEDDING_MODEL,
+    api_key=settings.OPENAI_API_KEY,
 )
 
 # ── PGVector ────────────────────────────────────────────

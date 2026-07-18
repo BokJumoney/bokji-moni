@@ -27,7 +27,7 @@ TOOLS = [policy_search_tool, web_search_tool, general_response_tool]
 
 _llm = ChatOpenAI(
     model="gpt-4o-mini",
-    api_key=settings.openai_api_key,
+    api_key=settings.OPENAI_API_KEY,
     temperature=0,
 )
 

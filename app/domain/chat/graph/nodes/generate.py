@@ -25,7 +25,7 @@ from app.infrastructure.config import settings
 
 llm = ChatOpenAI(
     model="gpt-4o",
-    api_key=settings.openai_api_key,
+    api_key=settings.OPENAI_API_KEY,
     temperature=0,
 )
 
