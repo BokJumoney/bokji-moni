@@ -4,7 +4,7 @@ API 정책 증분 업데이트 모듈 (신규 추가 / 폐지 삭제).
 - 신규: 청킹된 DataFrame을 Document로 변환해 PGVector 추가 + SQLModel 동기화
 - 폐지: service_id 목록으로 PGVector 청크 삭제
 - BM25 재빌드는 폐지/신규 반영이 모두 끝난 뒤
-  서비스 흐름(rag_update/service.py)에서 rebuild_bm25()로 수행
+  서비스 흐름(rag_update/rag_update_service.py)에서 rebuild_bm25()로 수행
 """
 from langchain_core.documents import Document
 from pandas import DataFrame
@@ -26,7 +26,10 @@ def parse_to_document( chunked_df:DataFrame ) -> list[Document]:
                 metadata={
                     "service_id": row["service_id"],
                     "service_name": row["service_name"],
-                    "chunk_type": row["chunk_type"],
+                    "service_depart": row["service_depart"],
+                    "service_target_household": row["service_target_household"],
+                    "service_target_age": row["service_target_age"],
+                    "chunk_type": row["chunk_type"]
                 },
             )
         )
@@ -35,45 +38,45 @@ def parse_to_document( chunked_df:DataFrame ) -> list[Document]:
     return documents
 
 
-def _sync_to_sqlmodel(chunks: list[Document]) -> None:
-    """WelfarePolicy SQLModel 테이블에 신규 청크 추가."""
+def init_sqlmodel_table(df: DataFrame) -> list[dict]:
+    """WelfarePolicy SQLModel 테이블에 정형 메타데이터 동기화."""
     session: Session = next(get_session())
+    wp_list: list[dict] = []
     try:
-        for chunk in chunks:
-            m = chunk.metadata
+        for _, row in df.iterrows():
             session.add(WelfarePolicy(
-                service_id=m["service_id"],
-                service_name=m["service_name"],
-                chunk_type=m["chunk_type"],
-                page_content=chunk.page_content,
+                service_id=row["서비스ID"],
+                service_name=row["서비스명"],
             ))
+            wp_list.append(
+                {
+                    "service_id": row["서비스ID"],
+                    "service_name": row["서비스명"],
+                }
+            )
         session.commit()
-        print(f"[new policy]SQLModel 동기화 완료: {len(chunks)}행")
+        print(f"SQLModel 동기화 완료: {len(df)}행")
     finally:
         session.close()
 
+    return wp_list
 
-def ingest_to_pgvector(chunked_df: DataFrame) -> int:
+
+def ingest_to_pgvector(chunked_df: DataFrame) -> None:
     """
-    신규 정책 청크를 PGVector에 추가 + SQLModel 동기화.
-    적재된 청크 수를 반환.
+    신규 정책 청크를 PGVector에 추가 .
     """
     chunks = parse_to_document(chunked_df) #청크를 Document로 변환하여 리턴.
 
     if not chunks: #chunk가 비어있으면 그냥 리턴
         print("적재할 청크가 없습니다.")
-        return 0
+        return
 
     # 1. PGVector에 신규 청크 추가
     vectorstore = get_vectorstore(settings.VECTOR_COLLECTION_NAME)
     ids = [f"{chunk.metadata["service_id"]}-{chunk.metadata["chunk_type"]}" for chunk in chunks]
     vectorstore.add_documents(chunks, ids=ids)
     print(f"[new policy]PGVector 적재 완료: 총 {len(chunks)}개 청크")
-
-    # 2. SQLModel 테이블 동기화 (BM25 재빌드의 원본)
-    _sync_to_sqlmodel(chunks)
-
-    return len(chunks)
 
 
 def delete_from_pgvector(service_ids: list[str]) -> None:

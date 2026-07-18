@@ -16,7 +16,7 @@ from app.domain.user.dependencies import get_current_admin
 from app.domain.admin.dependancies import get_admin_service
 from pathlib import Path
 from app.infrastructure.db.connection import get_session
-from app.domain.welfare.service.rag_update import service as rag_service
+from app.domain.welfare.service.rag_update import rag_update_service as rag_service
 
 router = APIRouter(
     prefix="/admin",
@@ -106,7 +106,7 @@ async def upload_pdf_file(
     extension = stored_path.suffix.lower()
 
     await cmd_exec_service.run_command([
-        "npx.cmd", 
+        "npx", #Windows - npx.cmd / Mac - npx
         "-y", 
         "kordoc", 
         str(absolute_file_path),
@@ -151,6 +151,8 @@ async def upload_hwp_file(
 #     service: AdminFileService = Depends(get_admin_file_service),
 # ) -> FileDeleteResponse:
 #     return service.delete_file(file_id)
+
 @router.get("/api_call", tags=[Tags.ADMIN])
 async def rag_api_call(session: Session = Depends(get_session)):
-    await rag_service.api_call_rag_update(session)
+    wp_list = await rag_service.api_call_rag_update(session)
+    return wp_list

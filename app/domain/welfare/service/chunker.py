@@ -2,7 +2,7 @@ import pandas as pd
 
 # 청크
 CHUNK_FIELD_MAP = {
-    "기본정보": ["서비스ID", "서비스명", "소관부처명", "서비스요약", "기준연도"],
+    "기본정보": ["서비스명", "소관부처명", "서비스요약", "기준연도"],
     "대상": ["생애주기", "관심주제", "가구유형", "대상자상세내용", "선정기준내용"],
     "지원내용": ["급여서비스내용", "지원주기", "제공유형"],
     "신청": ["처리절차", "신청방법", "필요서류"],
@@ -24,7 +24,7 @@ FIELD_LABEL_MAP = {
     "급여서비스내용": "지원내용",
     "지원주기": "지원주기",
     "제공유형": "제공유형",
-    "신청방법" : "신청방",
+    "신청방법" : "신청방법",
     "필요서류" : "필요서류",
     "처리절차": "처리절차",
     "문의처": "문의처",
@@ -61,10 +61,14 @@ def build_chunk_content(service_name: str, chunk_type: str, row: pd.Series, fiel
 
 
 def chunk_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.fillna("")
     policies = []
     for _, row in df.iterrows():
         service_id = row["서비스ID"]
         service_name = row["서비스명"]
+        service_depart = row["소관부처명"]
+        service_target_household = row["가구유형"]
+        service_target_age = row["생애주기"]
 
         for chunk_type, fields in CHUNK_FIELD_MAP.items():
             content = build_chunk_content(service_name, chunk_type, row, fields)
@@ -74,6 +78,9 @@ def chunk_dataframe(df: pd.DataFrame) -> pd.DataFrame:
             policies.append({
                 "service_id" : service_id,
                 "service_name" : service_name,
+                "service_depart" : service_depart,
+                "service_target_household" : service_target_household,
+                "service_target_age" : service_target_age,
                 "chunk_type" : chunk_type,
                 "content": content,
             })
@@ -92,4 +99,4 @@ if __name__ == "__main__":
     print()
     print(chunk_df.head(5).to_string())
 
-    chunk_df.to_csv("welfare_chunks5.csv", index=False)
+    chunk_df.to_csv("welfare_chunks__main__.csv", index=False)

@@ -6,7 +6,7 @@ from app.domain.admin.entity.models import (
     PolicyHwpMapping,
     WelfarePolicyHwp,
 )
-from app.domain.welfare.entity.models import Policy
+from app.domain.welfare.entity.models import WelfarePolicy
 from app.infrastructure.vectorstore.setup_vectorstore import get_huggingface_vectorstore
 
 
@@ -52,7 +52,7 @@ class AdminRepository:
     def find_hwp_files(self):
         """드롭다운과 파일 목록에 사용할 HWP 파일·연결 정책명 목록을 반환한다."""
         statement = (
-            select(WelfarePolicyHwp, Policy.service_name)
+            select(WelfarePolicyHwp, WelfarePolicy.service_name)
             .select_from(WelfarePolicyHwp)
             .join(
                 PolicyHwpMapping,
@@ -60,8 +60,8 @@ class AdminRepository:
                 isouter=True,
             )
             .join(
-                Policy,
-                Policy.service_id == PolicyHwpMapping.service_id,
+                WelfarePolicy,
+                WelfarePolicy.service_id == PolicyHwpMapping.service_id,
                 isouter=True,
             )
             .order_by(WelfarePolicyHwp.origin_file_name)
