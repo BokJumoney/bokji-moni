@@ -18,3 +18,5 @@ class ChatState(TypedDict):
     messages: Annotated[list, add_messages]  # Agent/Tool 메시지 누적
     context: list[str]                  # tool_executor가 채우는 근거 텍스트
     answer: str                         # generate.py 최종 응답
+    files: list[dict[str, str]]         # 신청서 다운로드 메타데이터
+    user_id: int

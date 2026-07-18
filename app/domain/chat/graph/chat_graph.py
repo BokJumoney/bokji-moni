@@ -8,12 +8,14 @@ from app.domain.chat.graph.nodes.information_agent import information_agent
 from app.domain.chat.graph.nodes.tool_executor import tool_executor
 from app.domain.chat.graph.router.tool_router import tool_router
 from app.domain.chat.graph.router.post_tool_router import post_tool_router
+from app.domain.chat.graph.agent.file_credential_agent import file_credential_agent
 
 # 이 그래프는 ChatState 사용
 graph = StateGraph(ChatState)
 
 graph.add_node("intent_router", intent_router)   # ← 수정: route_by_intent가 아니라 intent_router
 graph.add_node("information_agent", information_agent)
+graph.add_node("file_credential_agent", file_credential_agent)
 graph.add_node("comming_soon", comming_soon)
 graph.add_node("tool_executor", tool_executor)
 graph.add_node("generate", generate)
@@ -27,7 +29,7 @@ graph.add_conditional_edges(
     {
         "information_agent": "information_agent",
         "subscription_agent": "comming_soon",
-        "eligibility_agent": "comming_soon",
+        "file_credential_agent": "file_credential_agent",
     },
 )
 # --- 여기부터가 "Agent(Tool 선택)" 배선 ---
@@ -52,5 +54,6 @@ graph.add_conditional_edges(
 # -----------------------------------------------------
 graph.add_edge("comming_soon", END)
 graph.add_edge("generate", END)
+graph.add_edge("file_credential_agent", END)
 
 graph = graph.compile()

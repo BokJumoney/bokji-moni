@@ -74,22 +74,29 @@ class ChatService:
             self._load_history_for_graph, conversation.id, user_id
         )
         # 방금 저장한 user message 는 마지막 항목이므로 제외
+        # 문맥 추론에 필요한 최근 20개만 전달해 프롬프트가 무한히 커지지 않게 한다.
         chat_history = [
-            {"role": m.role, "content": m.content} for m in history[:-1]
+            {"role": m.role, "content": m.content} for m in history[-21:-1]
         ]
 
         # 4. LangGraph 호출 (DB transaction 밖에서)
         try:
             result = await graph.ainvoke({
                 "question": message,
+                "messages": [
+                    *chat_history,
+                    {"role": "user", "content": message},
+                ],
             })
             ai_content = result.get("answer", "")
             intent = result.get("intent", "General")
+            files = result.get("files", [])
         except Exception as exc:  # noqa: BLE001
             logger.exception("LangGraph 호출 실패: conversation_id=%s", conversation.id)
             # 안전한 오류 메시지 저장 (원문 노출 금지)
             ai_content = "죄송합니다. 답변을 생성하는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요."
             intent = "Error"
+            files = []
 
         # 5. AI 응답 저장 (별도 짧은 transaction)
         await run_in_threadpool(
@@ -100,6 +107,7 @@ class ChatService:
             response=ai_content,
             session_id=str(conversation.id),
             intent=intent,
+            files=files,
         )
 
     def _load_history_for_graph(

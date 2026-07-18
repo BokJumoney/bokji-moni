@@ -21,6 +21,7 @@ from app.infrastructure.vectorstore.setup_vectorstore import (
     get_vectorstore,
     _init_bm25_retriever,
     reset_retrievers,
+    get_policy_vectorstore,
 )
 
 #한글 csv에서 청크로
@@ -138,7 +139,7 @@ def ingest_to_pgvector(csv_path: str | None = None) -> int:
 def is_ingested() -> bool:
     """PGVector 컬렉션에 문서가 존재하는지 확인."""
     try:
-        vectorstore = get_vectorstore(settings.VECTOR_COLLECTION_NAME)
+        vectorstore = get_policy_vectorstore()
         results = vectorstore.similarity_search("복지", k=1)
         return len(results) > 0
     except Exception:

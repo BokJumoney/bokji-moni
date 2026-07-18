@@ -47,7 +47,7 @@ def main() -> None:
                 print(f"  {name:35s} {count:>6}건")
 
             names = {name for name, _ in collections}
-            for expected in ("welfare_policies", "welfare_policy_pdf_vector"):
+            for expected in ("welfare_policy_vector", "welfare_policy_pdf_vector"):
                 if expected not in names:
                     print(f"\n[경고] 코드에서 참조하는 '{expected}' 컬렉션이 DB에 없습니다.")
                     print("       ingest 시 collection_name 철자를 다시 확인하세요.")
