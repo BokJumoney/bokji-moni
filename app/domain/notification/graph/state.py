@@ -6,8 +6,8 @@ class NotiState(TypedDict):
     new_policies: List[dict]
 
     #e-mail 발송 대상 유저 정보
-    draft_user_names: List[str]
-    draft_user_emails: List[str]
+    user_names: List[str]
+    user_emails: List[str]
 
     #생성된 e-mail 내용
     content: str
@@ -16,7 +16,3 @@ class NotiState(TypedDict):
     confirmed: bool #통과 여부
     feedback: str #반려 시 피드백
     iter_count: int #반복 횟수(반려 횟수)
-
-
-
-

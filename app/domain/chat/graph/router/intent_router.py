@@ -7,7 +7,7 @@ from app.infrastructure.llm.gpt import get_llm_gpt
 
 # 일반 모드에서 사용자 질문 의도를 판단하는 Router
 OLLAMA_MODEL = settings.LOCAL_MODEL
-OLLAMA_BASE_URL = settings.LOCLAL_LLM_URL
+OLLAMA_BASE_URL = settings.LOCAL_LLM_URL
 
 # 프롬프트
 router_system = """
