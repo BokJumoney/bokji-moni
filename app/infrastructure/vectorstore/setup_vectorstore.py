@@ -30,7 +30,7 @@ def get_vectorstore(collection_name) -> PGVector:
     """langchain_postgres.PGVector 인스턴스를 반환 (싱글톤)."""
     return PGVector(
         connection=settings.database_url,
-        embeddings=embedding_snow,
+        embeddings=embedding,
         collection_name=collection_name,
     )
 

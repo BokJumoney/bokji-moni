@@ -37,7 +37,7 @@ from app.common.security import (
 from app.common.timezone import now_kst
 from app.domain.user.dto.request import LoginRequest, SignupRequest
 from app.domain.user.dto.response import AuthUserResponse, LoginResponse
-from app.domain.user.entity.models import AuthSession, User
+from app.domain.user.entity.models import AuthSession, User, UserRole
 from app.domain.user.repository.repository import UserRepository, AuthSessionRepository
 from app.domain.user.service import password_service
 from app.infrastructure.config import settings
@@ -97,7 +97,7 @@ class AuthService:
             email=email,
             password_hash=password_hash,
             name=name,
-            role="user",
+            role=UserRole.USER.value,
             is_active=True,
             created_at=now,
             updated_at=now,

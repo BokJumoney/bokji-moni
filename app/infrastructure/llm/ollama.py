@@ -6,5 +6,5 @@ def get_llm():
 
     return ChatOllama(
         model=settings.LOCAL_MODEL,
-        base_url=settings.LOCLAL_LLM_URL
+        base_url=settings.LOCAL_LLM_URL
     )

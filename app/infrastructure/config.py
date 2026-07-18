@@ -20,22 +20,21 @@ class Settings(BaseSettings):
     LOCAL_LLM_URL: str = "http://localhost:11434"
 
     # OpenAI (임베딩용)
-    OPENAI_MODEL : str = "gpt-4o-mini"
     OPENAI_API_KEY: str = ""
-
-    #TAVILY 웹 검색
-    TAVILY_API_KEY: str = ""
+    OPENAI_MODEL: str = "gpt-4o-mini"
 
     # 공공데이터포털 (공데포 저소득 복지 정책 API 키)
     WELFARE_API_KEY: str = ""
 
-    # pgvector / Vectorstore
-    VECTOR_EMBEDDING_MODEL: str = "text-embedding-3-small"
-    VECTOR_COLLECTION_NAME: str = "welfare_policy_vector"
-    VECTOR_EMBEDDING_MODEL_SNOW: str = "dragonkue/snowflake-arctic-embed-l-v2.0-ko"
-    VECTOR_EMBEDDING_HF_KEY: str = ""
+    #웹 검색 툴
+    TAVILY_API_KEY:str ="TAVILY_API_KEY"
 
-    # PDF
+    # pgvector / Vectorstore 초기 데이터
+    VECTOR_COLLECTION_NAME: str = "welfare_policy_vector"
+    VECTOR_EMBEDDING_MODEL: str = "text-embedding-3-small"
+    VECTOR_EMBEDDING_MODEL_SNOW: str = "dragonkue/snowflake-arctic-embed-l-v2.0-ko"
+
+    # PDF 벡터
     VECTOR_PDF_COLLECTION_NAME: str = "welfare_policy_pdf_vector"
 
     # CSV 적재
@@ -50,6 +49,7 @@ class Settings(BaseSettings):
     SESSION_IDLE_MINUTES: int = 30
     SESSION_ABSOLUTE_HOURS: int = 24
     SESSION_TOUCH_INTERVAL_SECONDS: int = 300
+
 
     # CORS 허용 origin
     ALLOWED_ORIGINS: list[str] = [

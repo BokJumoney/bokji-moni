@@ -80,16 +80,11 @@ class ChatService:
 
         # 4. LangGraph 호출 (DB transaction 밖에서)
         try:
-            result = await graph.ainvoke(
-                {
-                    "question": message,
-                    "chat_history": chat_history,
-                    "documents": [],
-                    "generation": "",
-                }
-            )
-            ai_content = result.get("generation", "")
-            intent = "General"
+            result = await graph.ainvoke({
+                "question": message,
+            })
+            ai_content = result.get("answer", "")
+            intent = result.get("intent", "General")
         except Exception as exc:  # noqa: BLE001
             logger.exception("LangGraph 호출 실패: conversation_id=%s", conversation.id)
             # 안전한 오류 메시지 저장 (원문 노출 금지)

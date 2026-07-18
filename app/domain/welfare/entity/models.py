@@ -12,6 +12,5 @@ from sqlmodel import SQLModel, Field
 class WelfarePolicy(SQLModel, table=True):
     __tablename__ = "welfare_policies"
 
-    # 정형 메타데이터
     service_id: str = Field(default=None, primary_key=True)
     service_name: str = Field(index=True)
