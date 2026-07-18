@@ -30,11 +30,11 @@ LIST_COLUMN_MAP = {
 }
 
 def parse_to_list(data):
-    dict_data = xmltodict.parse(data)
-    serv_list = dict_data["wantedList"]["servList"]
+    dict_data = xmltodict.parse(data) # xml -> dict로
+    serv_list = dict_data["wantedList"]["servList"] # 겉 껍질 벗기기
     if isinstance(serv_list, dict):
         serv_list = [serv_list]
-    serv_ids = [serv["servId"] for serv in serv_list]
+    serv_ids = [serv["servId"] for serv in serv_list] # servId만 추출
 
     return serv_ids
 

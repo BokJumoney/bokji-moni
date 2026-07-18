@@ -9,17 +9,19 @@ from functools import lru_cache
 
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers import EnsembleRetriever
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import OpenAIEmbeddings
 from langchain_postgres import PGVector
-from langchain_huggingface import HuggingFaceEmbeddings
 from app.infrastructure.config import settings
 
-embedding_snow = HuggingFaceEmbeddings(model_name=settings.VECTOR_EMBEDDING_MODEL_SNOW)
-
-
 # ── 임베딩 ──────────────────────────────────────────────
+embedding_snow = HuggingFaceEmbeddings(
+    model_name=settings.VECTOR_EMBEDDING_MODEL_SNOW,
+)
+
 embedding = OpenAIEmbeddings(
     model=settings.VECTOR_EMBEDDING_MODEL,
+    api_key=settings.OPENAI_API_KEY,
 )
 
 # ── PGVector ────────────────────────────────────────────

@@ -5,7 +5,7 @@ from app.domain.chat.graph.state import ChatGraphState
 from app.infrastructure.config import settings
 
 OLLAMA_MODEL = settings.LOCAL_MODEL
-OLLAMA_BASE_URL = settings.LOCLAL_LLM_URL
+OLLAMA_BASE_URL = settings.LOCAL_LLM_URL
 
 llm = ChatOllama(
     model=OLLAMA_MODEL,
