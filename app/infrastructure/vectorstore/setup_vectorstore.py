@@ -38,7 +38,7 @@ def get_vectorstore(collection_name) -> PGVector:
 def get_huggingface_vectorstore() -> PGVector:
     return PGVector(
         connection=settings.database_url,
-        embeddings=embedding_snow,
+        embeddings=embedding,
         collection_name=settings.VECTOR_PDF_COLLECTION_NAME,
     )
 

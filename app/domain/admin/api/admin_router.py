@@ -151,6 +151,7 @@ async def upload_hwp_file(
 #     service: AdminFileService = Depends(get_admin_file_service),
 # ) -> FileDeleteResponse:
 #     return service.delete_file(file_id)
+
 @router.get("/api_call", tags=[Tags.ADMIN])
 async def rag_api_call(session: Session = Depends(get_session)):
     wp_list = await rag_service.api_call_rag_update(session)
