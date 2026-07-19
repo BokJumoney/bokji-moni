@@ -86,7 +86,7 @@ class UserWelfare(SQLModel, table=True):
     모든 선택 필드는 미입력(null)·명시적 false/0 을 구분하기 위해 nullable 이다.
     """
 
-    __tablename__ = "user_welfare"
+    __tablename__ = "user_detail"
 
     user_id: uuid.UUID = Field(
         sa_column=Column(
