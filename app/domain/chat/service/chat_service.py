@@ -80,9 +80,19 @@ class ChatService:
 
         # 4. LangGraph 호출 (DB transaction 밖에서)
         try:
-            result = await graph.ainvoke({
-                "question": message,
-            })
+            # 인증 계층에서 확정한 식별자는 대화 state나 모델 메시지에 섞지 않고
+            # RunnableConfig로 전달한다. 구독 노드는 이 값을 Tool 권한 경계로 쓴다.
+            result = await graph.ainvoke(
+                {
+                    "question": message,
+                },
+                config={
+                    "configurable": {
+                        "user_id": str(user_id),
+                        "conversation_id": str(conversation.id),
+                    }
+                },
+            )
             ai_content = result.get("answer", "")
             intent = result.get("intent", "General")
         except Exception as exc:  # noqa: BLE001
