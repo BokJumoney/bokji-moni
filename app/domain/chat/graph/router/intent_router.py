@@ -22,6 +22,7 @@ from pydantic import BaseModel, Field
 from app.domain.chat.graph.state2 import ChatState
 from app.infrastructure.llm.gpt import get_llm_gpt
 
+# 프롬프트
 router_system = """
     당신은 사용자의 질문을 분석하여 적절한 처리 에이전트로 분류하는 라우터입니다.
     다음 세 가지 카테고리 중 하나로만 분류하세요:

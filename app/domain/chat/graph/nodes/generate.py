@@ -22,9 +22,12 @@ from langchain_openai import ChatOpenAI
 from app.domain.chat.graph.state2 import ChatState
 from app.infrastructure.config import settings
 
+OLLAMA_MODEL = settings.LOCAL_MODEL
+OLLAMA_BASE_URL = settings.LOCAL_LLM_URL
+
 llm = ChatOpenAI(
-    model="gpt-4o",
-    api_key=settings.openai_api_key,
+    model="gpt-4o-mini",
+    api_key=settings.OPENAI_API_KEY,
     temperature=0,
 )
 

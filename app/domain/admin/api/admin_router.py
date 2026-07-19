@@ -16,7 +16,7 @@ from app.domain.user.dependencies import get_current_admin
 from app.domain.admin.dependancies import get_admin_service
 from pathlib import Path
 from app.infrastructure.db.connection import get_session
-from app.domain.welfare.service.rag_update import service as rag_service
+from app.domain.welfare.service.rag_update import rag_update_service as rag_service
 
 router = APIRouter(
     prefix="/admin",
@@ -106,7 +106,7 @@ async def upload_pdf_file(
     extension = stored_path.suffix.lower()
 
     await cmd_exec_service.run_command([
-        "npx.cmd", 
+        "npx", #Windows - npx.cmd / Mac - npx
         "-y", 
         "kordoc", 
         str(absolute_file_path),
@@ -128,7 +128,7 @@ async def upload_pdf_file(
         status_code=status.HTTP_201_CREATED
 )
 async def upload_hwp_file(
-    policy_uuid: str = Form(...),
+    service_id: str = Form(...),
     file: UploadFile = File(...),
     admin_file_service: AdminFileService = Depends(get_admin_file_service),
     admin_service: AdminService = Depends(get_admin_service),
@@ -138,7 +138,7 @@ async def upload_hwp_file(
     origin_file_name = Path(store_result["originalFilename"]).stem
     file_uuid = Path(store_result["storedFilename"]).stem
     # DB 저장 로직(uuid 이름, 원본 파일 이름)
-    admin_service.save_hwp_form(policy_uuid, origin_file_name, file_uuid)
+    admin_service.save_hwp_form(service_id, origin_file_name, file_uuid)
 
     return store_result
 
@@ -151,6 +151,8 @@ async def upload_hwp_file(
 #     service: AdminFileService = Depends(get_admin_file_service),
 # ) -> FileDeleteResponse:
 #     return service.delete_file(file_id)
+
 @router.get("/api_call", tags=[Tags.ADMIN])
 async def rag_api_call(session: Session = Depends(get_session)):
-    await rag_service.api_call_rag_update(session)
+    wp_list = await rag_service.api_call_rag_update(session)
+    return wp_list
