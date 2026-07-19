@@ -10,7 +10,7 @@ from datetime import date, datetime
 from enum import Enum
 from typing import Optional
 
-from sqlalchemy import BigInteger, CheckConstraint, Column, ForeignKey
+from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, ForeignKey, true
 from sqlalchemy.dialects.postgresql import UUID
 from sqlmodel import Field, SQLModel
 
@@ -42,6 +42,17 @@ class User(SQLModel, table=True):
     name: str = Field(max_length=100, nullable=False)
     role: str = Field(default=UserRole.USER.value, max_length=20, nullable=False)
     is_active: bool = Field(default=True, nullable=False)
+    # 알림 수신 여부는 개별 정책 구독 행과 분리해 사용자 계정에 한 번만 저장한다.
+    # ORM을 거치지 않는 INSERT에도 같은 기본값이 적용되도록 DB 기본값도 둔다.
+    notification_enabled: bool = Field(
+        default=True,
+        sa_column=Column(
+            "notification_enabled",
+            Boolean,
+            nullable=False,
+            server_default=true(),
+        ),
+    )
     created_at: datetime = Field(
         default_factory=_utcnow,
         nullable=False,

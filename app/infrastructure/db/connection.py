@@ -23,8 +23,10 @@ def init_db() -> None:
     이미 등록되지만, chat 엔티티는 repository 가 늦게 import 될 수 있으므로
     여기서 명시적으로 import 한다.
     """
-    # 엔티티 메타데이터 등록 보장
+    # 아래 import는 모델을 metadata에 등록할 뿐 기존 엔티티 정의를 수정하지 않는다.
+    # create_all은 없는 테이블을 만들지만 기존 테이블 컬럼을 ALTER하지 않는다.
     from app.domain.chat.entity import models as _chat_models  # noqa: F401
+    from app.domain.subscription.entity import models as _subscription_models  # noqa: F401
     from app.domain.user.entity import models as _user_models  # noqa: F401
     from app.domain.welfare.entity import models as _welfare_models  # noqa: F401
 

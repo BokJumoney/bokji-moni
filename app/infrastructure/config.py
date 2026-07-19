@@ -29,8 +29,8 @@ class Settings(BaseSettings):
     #웹 검색 툴
     TAVILY_API_KEY:str ="TAVILY_API_KEY"
 
-    # pgvector / Vectorstore 초기 데이터
-    VECTOR_COLLECTION_NAME: str = "welfare_policy_vector"
+    # pgvector / Vectorstore
+    VECTOR_COLLECTION_NAME: str = "welfare_policies"
     VECTOR_EMBEDDING_MODEL: str = "text-embedding-3-small"
     VECTOR_EMBEDDING_MODEL_SNOW: str = "dragonkue/snowflake-arctic-embed-l-v2.0-ko"
 
@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     SESSION_ABSOLUTE_HOURS: int = 24
     SESSION_TOUCH_INTERVAL_SECONDS: int = 300
 
+    TAVILY_API_KEY: str
 
     # CORS 허용 origin
     ALLOWED_ORIGINS: list[str] = [

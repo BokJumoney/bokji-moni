@@ -8,21 +8,11 @@ welfare_policy_pdf_vector 벡터 컬렉션 검색기.
 버그가 있었다. 아래 버전은 해당 버그를 수정한 것이다.
 """
 
-from langchain_openai import OpenAIEmbeddings
-from langchain_postgres import PGVector
-
-from app.infrastructure.config import settings
-from langchain_huggingface import HuggingFaceEmbeddings
-from app.infrastructure.config import settings
-
-embedding_snow = HuggingFaceEmbeddings(model_name=settings.VECTOR_EMBEDDING_MODEL_SNOW)
-
-
-pdf_vectorstore = PGVector(
-    embeddings=embedding_snow,
-    collection_name="welfare_policy_pdf_vector",
-    connection=settings.database_url,
+from app.infrastructure.vectorstore.setup_vectorstore import (
+    get_huggingface_vectorstore,
 )
+
+pdf_vectorstore = get_huggingface_vectorstore()
 
 
 async def policy_pdf_search(query: str, k: int = 5):
