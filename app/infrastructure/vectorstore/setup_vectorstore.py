@@ -54,7 +54,6 @@ def get_form_vectorstore() -> PGVector:
 # ── BM25 (키워드 검색) ─────────────────────────────────
 _bm25_retriever: BM25Retriever | None = None
 
-
 def get_bm25_retriever() -> BM25Retriever:
     """
     BM25Retriever 인스턴스를 반환.

@@ -41,6 +41,7 @@ class User(SQLModel, table=True):
     password_hash: str = Field(nullable=False)
     name: str = Field(max_length=100, nullable=False)
     role: str = Field(default=UserRole.USER.value, max_length=20, nullable=False)
+    noti_agreed: bool = Field(default=False, nullable=False)
     is_active: bool = Field(default=True, nullable=False)
     created_at: datetime = Field(
         default_factory=_utcnow,
