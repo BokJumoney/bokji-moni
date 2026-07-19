@@ -21,6 +21,12 @@ from app.infrastructure.config import settings
 _tavily = TavilySearchResults(
     max_results=5,
     tavily_api_key=settings.TAVILY_API_KEY,
+    include_domains=[
+        "bokjiro.go.kr",
+        "mohw.go.kr",
+        "gov.kr",
+        "easylaw.go.kr",
+    ],
 )
 
 

@@ -79,10 +79,18 @@ class ChatService:
         ]
 
         # 4. LangGraph 호출 (DB transaction 밖에서)
+        #
+        # 주의: 지금 ChatState(state2.py)는 question / intent / messages /
+        # context / answer 중심으로 구성되어 있다. "documents", "generation"은
+        # 예전 State(state.py, ChatGraphState)의 흔적이라 지금 그래프에서는
+        # 안 쓰인다. result.get("generation", ...)으로 읽으면 그런 키가 없어서
+        # 항상 빈 문자열만 나온다 - 실제 답변은 result["answer"]에 들어있다.
         try:
-            result = await graph.ainvoke({
-                "question": message,
-            })
+            result = await graph.ainvoke(
+                {
+                    "question": message,
+                }
+            )
             ai_content = result.get("answer", "")
             intent = result.get("intent", "General")
         except Exception as exc:  # noqa: BLE001
