@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.domain.chat.api.chat_router import router as chat_router
+from app.domain.user.api.user_router import router as user_router
 from app.domain.user.api.auth_router import router as auth_router
 from app.domain.admin.api.admin_router import router as admin_router
 from app.domain.admin.api.admin_policy import router as admin_policy_router
@@ -45,6 +46,7 @@ app.add_middleware(
 )
 app.include_router(chat_router, prefix="/api/v1/chat", tags=["챗봇"])
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["인증"])
+app.include_router(user_router, prefix="/api/v1/users", tags=["사용자"])
 app.include_router(admin_router, tags=["파일 업로드"])
 app.include_router(admin_policy_router)
 # 프런트 계약의 /api/v1/subscriptions 설정·목록·해지 API를 등록한다.
