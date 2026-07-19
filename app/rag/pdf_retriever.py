@@ -9,5 +9,5 @@ async def policy_pdf_search(query: str, k: int = 5):
         get_vectorstore,
     )
 
-    vectorstore = get_vectorstore(settings.POLICY_PDF_COLLECTION_NAME)
+    vectorstore = get_vectorstore(settings.VECTOR_PDF_COLLECTION_NAME)
     return await run_in_threadpool(vectorstore.similarity_search, query, k)

@@ -108,7 +108,7 @@ async def upload_pdf_file(
     extension = stored_path.suffix.lower()
 
     await cmd_exec_service.run_command([
-        "npx", #Windows - npx.cmd / Mac - npx
+        "npx.cmd", #Windows - npx.cmd / Mac - npx
         "-y", 
         "kordoc", 
         str(absolute_file_path),

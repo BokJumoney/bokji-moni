@@ -163,9 +163,9 @@ class UserWelfare(SQLModel, table=True):
 class UserBackground(SQLModel, table=True):
     __tablename__ = "user_background"
 
-    user_id: int = Field(
+    user_id: uuid.UUID = Field(
         primary_key=True,
-        foreign_key="user.id",  # 실제 유저 테이블명에 맞게 수정
+        foreign_key="users.id",  # 실제 유저 테이블명에 맞게 수정
     )
 
     income: int | None = Field(default=None, ge=0)
