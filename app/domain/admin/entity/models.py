@@ -37,7 +37,7 @@ class PolicyHwpMapping(SQLModel, table=True):
     __tablename__ = "policy_hwp_mapping"
 
     id: int = Field(primary_key=True)
-    service_id: str = Field(foreign_key="policies.service_id", max_length=25)
+    service_id: str = Field(foreign_key="welfare_policies.service_id", max_length=25)
     hwp_uuid: uuid.UUID = Field(
         foreign_key="welfare_policy_hwp.hwp_uuid"
     )
