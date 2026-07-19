@@ -1,6 +1,3 @@
-from app.domain.subscription.entity.models import (
-    PolicySubscription,
-    SubscriptionSettings,
-)
+from app.domain.subscription.entity.models import PolicySubscription
 
-__all__ = ["PolicySubscription", "SubscriptionSettings"]
+__all__ = ["PolicySubscription"]

@@ -1,4 +1,4 @@
-"""구독 설정·정책 구독의 SQLModel Repository.
+"""개별 정책 구독의 SQLModel Repository.
 
 Repository는 SQL 작성과 행 추가/삭제만 담당하고 transaction의 commit과
 rollback은 애플리케이션 서비스가 담당한다. 모든 개인 데이터 쿼리는
@@ -11,10 +11,7 @@ from typing import Optional
 from sqlalchemy import case, func, or_
 from sqlmodel import Session, select
 
-from app.domain.subscription.entity.models import (
-    PolicySubscription,
-    SubscriptionSettings,
-)
+from app.domain.subscription.entity.models import PolicySubscription
 from app.domain.welfare.entity.models import WelfarePolicy
 
 
@@ -23,30 +20,6 @@ class SubscriptionRepository:
 
     def __init__(self, session: Session):
         self.session = session
-
-    def get_settings(self, user_id: uuid.UUID) -> Optional[SubscriptionSettings]:
-        """사용자 PK로 설정 한 행을 조회한다."""
-        return self.session.get(SubscriptionSettings, user_id)
-
-    def get_settings_for_update(
-        self,
-        user_id: uuid.UUID,
-    ) -> Optional[SubscriptionSettings]:
-        """설정 변경이 끝날 때까지 기존 행을 잠가 동시 PUT 덮어쓰기를 막는다.
-
-        행이 아직 없으면 잠글 대상도 없다. 그 최초 생성 경합은 서비스에서
-        PK 충돌을 rollback한 뒤 생성된 행을 다시 잠그는 방식으로 처리한다.
-        """
-        statement = (
-            select(SubscriptionSettings)
-            .where(SubscriptionSettings.user_id == user_id)
-            .with_for_update()
-        )
-        return self.session.exec(statement).first()
-
-    def add_settings(self, settings: SubscriptionSettings) -> None:
-        """설정 행을 세션에 추가하되 commit은 호출한 서비스에 맡긴다."""
-        self.session.add(settings)
 
     def get_subscription(
         self,

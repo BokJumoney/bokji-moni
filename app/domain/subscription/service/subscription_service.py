@@ -11,21 +11,20 @@ from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session
 
-from app.common.timezone import KST, now_kst
+from app.common.timezone import KST
 from app.domain.subscription.dto.response import (
     NotificationSettingsResponse,
     PolicySubscriptionItemResponse,
     PolicySubscriptionListResponse,
 )
-from app.domain.subscription.entity.models import (
-    PolicySubscription,
-    SubscriptionSettings,
-)
+from app.domain.subscription.entity.models import PolicySubscription
 from app.domain.subscription.exceptions import (
     PolicyNotFoundError,
     SubscriptionStorageError,
 )
 from app.domain.subscription.repository import SubscriptionRepository
+from app.domain.user.entity.models import User
+from app.domain.user.repository.repository import UserRepository
 
 
 def _response_datetime(value: datetime) -> datetime:
@@ -41,12 +40,15 @@ class SubscriptionApplicationService:
     def __init__(self, session: Session):
         self.session = session
         self.repository = SubscriptionRepository(session)
+        self.user_repository = UserRepository(session)
 
     def get_settings(self, user_id: uuid.UUID) -> NotificationSettingsResponse:
-        """사용자 설정을 조회하고 없으면 기본 설정 행을 지연 생성한다."""
+        """users 행에 저장된 단일 알림 수신 여부를 호환 응답으로 반환한다."""
         try:
-            settings = self._get_or_create_settings(user_id)
-            return self._settings_response(settings)
+            user = self.user_repository.get_by_id(user_id)
+            if user is None:
+                raise SubscriptionStorageError()
+            return self._settings_response(user)
         except SubscriptionStorageError:
             raise
         except Exception as exc:
@@ -58,24 +60,16 @@ class SubscriptionApplicationService:
         user_id: uuid.UUID,
         enabled: bool,
     ) -> NotificationSettingsResponse:
-        """정책 소식 수신 여부를 바꾸고 변경된 전체 설정을 반환한다."""
-        return self._update_settings(
-            user_id,
-            field_name="policy_news_enabled",
-            value=enabled,
-        )
+        """기존 정책 소식 API를 단일 알림 수신 여부에 연결한다."""
+        return self._update_notification_enabled(user_id, enabled)
 
     def update_pause(
         self,
         user_id: uuid.UUID,
         paused: bool,
     ) -> NotificationSettingsResponse:
-        """전체 알림 일시 중지 여부를 바꾸고 전체 설정을 반환한다."""
-        return self._update_settings(
-            user_id,
-            field_name="is_paused",
-            value=paused,
-        )
+        """기존 일시 중지 API를 단일 알림 수신 여부의 역값에 연결한다."""
+        return self._update_notification_enabled(user_id, not paused)
 
     def list_subscriptions(
         self,
@@ -200,100 +194,34 @@ class SubscriptionApplicationService:
             self.session.rollback()
             raise SubscriptionStorageError() from exc
 
-    def _get_or_create_settings(
+    def _update_notification_enabled(
         self,
         user_id: uuid.UUID,
-    ) -> SubscriptionSettings:
-        """설정 GET에서도 항상 완전한 기본 객체를 주기 위해 행을 생성한다.
-
-        미존재 행은 잠글 수 없으므로 동시 최초 GET은 둘 다 INSERT를 시도할
-        수 있다. PK 충돌이 난 요청은 rollback하고 다른 요청이 만든 행을 읽는다.
-        """
-        settings = self.repository.get_settings(user_id)
-        if settings is not None:
-            return settings
-
-        settings = SubscriptionSettings(user_id=user_id)
-        self.repository.add_settings(settings)
-        try:
-            self.session.commit()
-            self.session.refresh(settings)
-            return settings
-        except IntegrityError:
-            # 최초 GET이 동시에 들어온 경우 다른 요청이 만든 행을 사용한다.
-            self.session.rollback()
-            existing = self.repository.get_settings(user_id)
-            if existing is not None:
-                return existing
-            raise SubscriptionStorageError() from None
-        except Exception as exc:
-            self.session.rollback()
-            raise SubscriptionStorageError() from exc
-
-    def _update_settings(
-        self,
-        user_id: uuid.UUID,
-        *,
-        field_name: str,
-        value: bool,
+        enabled: bool,
     ) -> NotificationSettingsResponse:
-        """설정 생성과 변경을 한 transaction에서 처리한다.
-
-        기존 행은 ``FOR UPDATE``로 잠근 뒤 시간을 계산하므로 동시 PUT에서도
-        서로 다른 설정값이 보존되고 ``updated_at``이 역행하지 않는다.
-        ``FOR UPDATE``는 존재하는 행만 잠글 수 있으므로 최초 생성 경합의
-        loser는 UNIQUE 충돌을 rollback한 뒤 생성된 행을 잠가 한 번 재시도한다.
-        """
+        """사용자 행을 잠근 뒤 단일 알림 수신 여부를 변경한다."""
         try:
-            settings = self.repository.get_settings_for_update(user_id)
-        except Exception as exc:
-            self.session.rollback()
-            raise SubscriptionStorageError() from exc
-        if settings is None:
-            settings = SubscriptionSettings(user_id=user_id)
-            try:
-                self.repository.add_settings(settings)
-            except Exception as exc:
-                self.session.rollback()
-                raise SubscriptionStorageError() from exc
-
-        # lock을 획득한 다음 변경 시각을 계산해야 늦게 commit된 요청의 시간이
-        # 더 과거로 돌아가는 현상을 막을 수 있다.
-        setattr(settings, field_name, value)
-        settings.updated_at = now_kst()
-        try:
-            self.session.commit()
-            self.session.refresh(settings)
-        except IntegrityError:
-            self.session.rollback()
-            try:
-                settings = self.repository.get_settings_for_update(user_id)
-            except Exception as exc:
-                raise SubscriptionStorageError() from exc
-            if settings is None:
+            user = self.user_repository.get_by_id_for_update(user_id)
+            if user is None:
                 raise SubscriptionStorageError() from None
-            setattr(settings, field_name, value)
-            settings.updated_at = now_kst()
-            try:
-                self.session.commit()
-                self.session.refresh(settings)
-            except Exception as exc:
-                self.session.rollback()
-                raise SubscriptionStorageError() from exc
+            user = self.user_repository.update_notification_enabled(user, enabled)
+            return self._settings_response(user)
+        except SubscriptionStorageError:
+            self.session.rollback()
+            raise
         except Exception as exc:
             self.session.rollback()
             raise SubscriptionStorageError() from exc
-        return self._settings_response(settings)
 
     @staticmethod
     def _settings_response(
-        settings: SubscriptionSettings,
+        user: User,
     ) -> NotificationSettingsResponse:
-        """ORM 필드명을 프런트 설정 계약에 맞춰 명시적으로 투영한다."""
+        """단일 users 컬럼을 기존 두 필드 API 계약으로 투영한다."""
         return NotificationSettingsResponse(
-            policy_news_enabled=settings.policy_news_enabled,
-            is_paused=settings.is_paused,
-            updated_at=_response_datetime(settings.updated_at),
+            policy_news_enabled=user.notification_enabled,
+            is_paused=not user.notification_enabled,
+            updated_at=_response_datetime(user.updated_at),
         )
 
     @staticmethod
