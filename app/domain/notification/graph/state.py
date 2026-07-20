@@ -9,7 +9,8 @@ class NotiState(TypedDict):
     user_names: List[str]
     user_emails: List[str]
 
-    #생성된 e-mail 내용
+    #생성된 e-mail 제목, 내용
+    title: str
     content: str
 
     #e-mail 검사 결과

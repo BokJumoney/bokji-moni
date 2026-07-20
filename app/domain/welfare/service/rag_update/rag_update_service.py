@@ -2,10 +2,8 @@ from sqlmodel import Session
 
 from app.domain.notification.service.noti_service import send_new_policy_email
 from app.domain.welfare.repository import WelfareRepository
-from app.domain.welfare.service.rag_update import client
-from app.domain.welfare.service import parser, chunker
-from app.domain.welfare.vectorstore.ingest_new_policy import ingest_to_pgvector, delete_from_pgvector, init_sqlmodel_table
-from app.infrastructure.config import settings
+from app.domain.welfare.service import parser, chunker, client
+from app.domain.welfare.service.rag_update.ingest_new_policy import ingest_to_pgvector, delete_from_pgvector, init_sqlmodel_table
 from app.infrastructure.vectorstore.setup_vectorstore import rebuild_bm25
 
 async def insert_new_policy(new_policy_list) -> list:

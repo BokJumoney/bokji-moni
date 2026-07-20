@@ -4,8 +4,8 @@ from pathlib import Path
 import uuid
 
 from langchain_core.documents import Document
-from langchain_huggingface import HuggingFaceEmbeddings
 from app.infrastructure.config import settings
+from app.infrastructure.vectorstore.setup_vectorstore import embedding_snow
 
 
 class PolicyEmbeddingService:
@@ -294,15 +294,7 @@ class PolicyEmbeddingService:
 
     # 이게 메인(텍스트 파일을 임베딩 및 저장)
     async def txtfile_embedding(self, file_path: str):
-        embeddings = HuggingFaceEmbeddings(
-            model_name=settings.VECTOR_EMBEDDING_HUGGINGFACE_MODEL,
-            model_kwargs={
-                "device": "cpu",      # GPU 사용 시 "cuda"
-            },
-            encode_kwargs={
-                "normalize_embeddings": True,
-            },
-        )
+        embeddings = embedding_snow
 
         text = self.read_policy_text(file_path)
         policies = self.split_policy_blocks(text)
