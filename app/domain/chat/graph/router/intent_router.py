@@ -12,6 +12,8 @@ conditional edges 매핑과 정확히 같은 3개 키를 반환해야 함)
     3. eligibility_agent  : 자격요건 판별 (아직 미구현 -> chat_graph.py에서
                              coming_soon으로 매핑됨)
 
+    자신에게 맞는 복지를 추천해달라는 문구가 오면 information_agent로 분기시킨다.
+
 ※ 별도의 casual_talk 카테고리는 두지 않는다. "날씨 알려줘" 같은 복지 무관
   질문도 information_agent로 보내고, information_agent 내부의
   general_response_tool이 "저는 복지 정책 안내 서비스입니다" 라고 응답한다.
@@ -22,7 +24,6 @@ from pydantic import BaseModel, Field
 from app.domain.chat.graph.state2 import ChatState
 from app.infrastructure.llm.gpt import get_llm_gpt
 
-# 프롬프트
 router_system = """
     당신은 사용자의 질문을 분석하여 적절한 처리 에이전트로 분류하는 라우터입니다.
     다음 세 가지 카테고리 중 하나로만 분류하세요:
@@ -34,6 +35,8 @@ router_system = """
        - 복지 정책과 전혀 무관한 질문(날씨, 잡담, 코딩 등)도 이 카테고리로
          분류하세요. information_agent 내부에서 관련 없는 질문임을 판단해
          적절히 안내합니다.
+       -  자신에게 맞는 복지를 추천해달라는 문구가 오면 information_agent로 분기시킨다.
+
 
     2. subscription_graph: 정책 알림/구독 관리 요청
        - 특정 정책이 새로 생기거나 바뀌면 알려달라는 요청

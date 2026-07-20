@@ -7,9 +7,7 @@ welfare_policies(정책 기본 정보)와 welfare_policy_pdf_vector(정책 상�
 """
 
 import asyncio
-
 from langchain_core.tools import tool
-
 from app.rag.policy_retriever import search_policy_info
 from app.rag.pdf_retriever import policy_pdf_search
 
