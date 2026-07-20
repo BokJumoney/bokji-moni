@@ -14,11 +14,3 @@ class PolicyNewsUpdateRequest(BaseModel):
     enabled: StrictBool
 
     model_config = ConfigDict(extra="forbid")
-
-
-class NotificationPauseUpdateRequest(BaseModel):
-    """모든 알림의 일시 중지 여부 변경 요청."""
-
-    paused: StrictBool
-
-    model_config = ConfigDict(extra="forbid")

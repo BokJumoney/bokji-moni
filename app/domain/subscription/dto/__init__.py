@@ -1,5 +1,4 @@
 from app.domain.subscription.dto.request import (
-    NotificationPauseUpdateRequest,
     PolicyNewsUpdateRequest,
 )
 from app.domain.subscription.dto.response import (
@@ -9,7 +8,6 @@ from app.domain.subscription.dto.response import (
 )
 
 __all__ = [
-    "NotificationPauseUpdateRequest",
     "NotificationSettingsResponse",
     "PolicyNewsUpdateRequest",
     "PolicySubscriptionItemResponse",

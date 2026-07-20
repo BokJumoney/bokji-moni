@@ -60,16 +60,8 @@ class SubscriptionApplicationService:
         user_id: uuid.UUID,
         enabled: bool,
     ) -> NotificationSettingsResponse:
-        """기존 정책 소식 API를 단일 알림 수신 여부에 연결한다."""
+        """기존 정책 소식 API를 전체 알림 수신 여부에 연결한다."""
         return self._update_notification_enabled(user_id, enabled)
-
-    def update_pause(
-        self,
-        user_id: uuid.UUID,
-        paused: bool,
-    ) -> NotificationSettingsResponse:
-        """기존 일시 중지 API를 단일 알림 수신 여부의 역값에 연결한다."""
-        return self._update_notification_enabled(user_id, not paused)
 
     def list_subscriptions(
         self,
@@ -199,7 +191,7 @@ class SubscriptionApplicationService:
         user_id: uuid.UUID,
         enabled: bool,
     ) -> NotificationSettingsResponse:
-        """사용자 행을 잠근 뒤 단일 알림 수신 여부를 변경한다."""
+        """사용자 행을 잠근 뒤 전체 알림 수신 여부를 변경한다."""
         try:
             user = self.user_repository.get_by_id_for_update(user_id)
             if user is None:
@@ -217,11 +209,10 @@ class SubscriptionApplicationService:
     def _settings_response(
         user: User,
     ) -> NotificationSettingsResponse:
-        """단일 users 컬럼을 기존 두 필드 API 계약으로 투영한다."""
+        """user.noti_agreed를 반환함"""
         return NotificationSettingsResponse(
-            policy_news_enabled=user.notification_enabled,
-            is_paused=not user.notification_enabled,
-            updated_at=_response_datetime(user.updated_at),
+            policy_news_enabled=user.noti_agreed,
+            updated_at=_response_datetime(user.updated_at)
         )
 
     @staticmethod

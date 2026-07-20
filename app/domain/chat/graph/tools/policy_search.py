@@ -2,14 +2,12 @@
 Policy Search Tool.
 
 복지 정책 관련 질문을 처리한다.
-welfare_policies(정책 기본 정보)와 welfare_policy_pdf_vector(정책 상세 문서)
+welfare_policy_vector(정책 기본 정보)와 welfare_policy_pdf_vector(정책 상세 문서)
 두 벡터 컬렉션을 동시에 검색한 뒤 결과를 병합해서 돌려준다.
 """
 
 import asyncio
-
 from langchain_core.tools import tool
-
 from app.rag.policy_retriever import search_policy_info
 from app.rag.pdf_retriever import policy_pdf_search
 
@@ -19,7 +17,7 @@ async def policy_search_tool(query: str) -> str:
     """
     복지 정책의 지원 대상, 신청 방법, 정책 설명, 구비서류, 서식,
     세부 조건 등 정책 자체에 대한 질문에 답할 때 사용한다.
-    벡터DB(welfare_policies, welfare_policy_pdf_vector)를 검색한다.
+    벡터DB(welfare_policy_vector, welfare_policy_pdf_vector)를 검색한다.
     """
     policy_docs, pdf_docs = await asyncio.gather(
         search_policy_info(query),

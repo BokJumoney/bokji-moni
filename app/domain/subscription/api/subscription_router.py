@@ -13,7 +13,6 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlmodel import Session
 
 from app.domain.subscription.dto.request import (
-    NotificationPauseUpdateRequest,
     PolicyNewsUpdateRequest,
 )
 from app.domain.subscription.dto.response import (
@@ -78,29 +77,6 @@ def update_policy_news(
         )
     except SubscriptionError as exc:
         raise _subscription_error_to_http(exc) from exc
-
-
-@router.put(
-    "/settings/pause",
-    response_model=NotificationSettingsResponse,
-    summary="모든 알림 일시 중지 설정 변경",
-)
-def update_notification_pause(
-    body: NotificationPauseUpdateRequest,
-    response: Response,
-    current_user: User = Depends(get_current_user),
-    session: Session = Depends(get_session),
-) -> NotificationSettingsResponse:
-    """모든 알림의 일시 중지 여부를 변경하고 전체 설정을 반환한다."""
-    response.headers["Cache-Control"] = "private, no-store"
-    try:
-        return SubscriptionApplicationService(session).update_pause(
-            current_user.id,
-            body.paused,
-        )
-    except SubscriptionError as exc:
-        raise _subscription_error_to_http(exc) from exc
-
 
 @router.get(
     "",

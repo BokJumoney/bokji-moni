@@ -13,7 +13,6 @@ SUBSCRIPTION_TOOL_PROMPT = """당신은 복지 정책 구독 관리 에이전트
 - 특정 정책 마감 알림 구독: subscribe_policy
 - 특정 정책 마감 알림 해지: unsubscribe_policy
 - 전체 정책 소식 수신 변경: set_policy_news
-- 모든 알림 일시 중지 변경: set_notification_pause
 
 정책 구독이나 해지 요청의 query에는 사용자가 말한 정책 ID 또는 정책명을
 그대로 넣으세요. 이메일 발송, 이메일 주소 변경, 정책 내용 검색은 이
