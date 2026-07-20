@@ -48,7 +48,6 @@ async def extract_policy_qualification(state: CredentialState) -> dict:
 
     docs = await search_policy_info(
         f"{policy_name} 신청 자격 지원 대상 선정 기준 소득 재산 나이",
-        5,
     )
     if not docs:
         return {"credential": None}

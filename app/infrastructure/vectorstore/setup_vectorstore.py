@@ -23,11 +23,11 @@ def get_openai_embedding() -> OpenAIEmbeddings:
     )
 
 
-@lru_cache(maxsize=1)
-def get_snow_embedding():
-    from langchain_huggingface import HuggingFaceEmbeddings
-
-    return HuggingFaceEmbeddings(model_name=settings.VECTOR_EMBEDDING_MODEL_SNOW)
+# @lru_cache(maxsize=1)
+# def get_snow_embedding():
+#     from langchain_huggingface import HuggingFaceEmbeddings
+#
+#     return HuggingFaceEmbeddings(model_name=settings.VECTOR_EMBEDDING_MODEL_SNOW)
 
 # ── PGVector ────────────────────────────────────────────
 @lru_cache(maxsize=1) # @lru_cache: 같은 인수를 전달했던 호출 결과가 이미 캐시되어 있으면 함수를 실행하지 않고 캐시 결과를 반환
@@ -44,7 +44,7 @@ def get_policy_vectorstore() -> PGVector:
     """정책 기본정보용 HuggingFace PGVector 컬렉션을 반환한다."""
     return PGVector(
         connection=settings.database_url,
-        embeddings=get_snow_embedding(),
+        embeddings=get_openai_embedding(),
         collection_name=settings.VECTOR_COLLECTION_NAME,
     )
 
@@ -54,7 +54,7 @@ def get_huggingface_vectorstore() -> PGVector:
     """관리자가 업로드한 정책 PDF용 PGVector 컬렉션을 반환한다."""
     return PGVector(
         connection=settings.database_url,
-        embeddings=get_snow_embedding(),
+        embeddings=get_openai_embedding(),
         collection_name=settings.VECTOR_PDF_COLLECTION_NAME,
     )
 

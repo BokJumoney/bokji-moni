@@ -1,20 +1,41 @@
-"""사용자 질문을 실제 처리 노드로 분류하는 Intent Router."""
+"""
+Intent Router.
 
-from typing import Literal
+사용자 질문을 아래 3개 에이전트 중 하나로 분류한다. (chat_graph.py의
+conditional edges 매핑과 정확히 같은 3개 키를 반환해야 함)
 
+    1. information_agent  : 복지 정책 정보 제공 (지원 대상, 신청 방법, 정책 설명,
+                             구비서류 등) + 복지와 무관한 질문도 일단 여기로 보내서
+                             내부 general_response_tool이 안내하도록 함
+    2. subscription_agent : 정책 구독/알림 관리 (아직 미구현 -> chat_graph.py에서
+                             coming_soon으로 매핑됨)
+    3. file_credential_agent  : 자격요건 판별 (아직 미구현 -> chat_graph.py에서
+                             coming_soon으로 매핑됨)
+
+※ 별도의 casual_talk 카테고리는 두지 않는다. "날씨 알려줘" 같은 복지 무관
+  질문도 information_agent로 보내고, information_agent 내부의
+  general_response_tool이 "저는 복지 정책 안내 서비스입니다" 라고 응답한다.
+"""
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
+from typing import Literal
 
 from app.domain.chat.graph.state2 import ChatState
 from app.infrastructure.llm.gpt import get_llm_gpt
 
-
 router_system = """
-당신은 사용자의 질문을 아래 네 가지 카테고리 중 하나로 분류합니다.
+    당신은 사용자의 질문을 분석하여 적절한 처리 에이전트로 분류하는 라우터입니다.
+    다음 세 가지 카테고리 중 하나로만 분류하세요:
 
-1. information_agent
-   정책 설명, 지원 대상, 신청 방법, 구비서류 목록 등 정보 질문입니다.
-   복지와 무관한 질문도 이 카테고리로 분류합니다.
+    1. information_agent: 복지 정책 자체에 대한 정보 질문, 그리고 그 외 모든 질문
+       - 지원 대상, 신청 방법, 정책 설명, 구비서류, 세부 조건, 최신 정책 변경 여부 등
+       - '복지'/'정책'이라는 단어가 없어도 '실직', '생활비 부족', '파산' 처럼
+         정부 지원이 필요한 상황을 토로하는 경우도 포함
+       - 복지 정책과 전혀 무관한 질문(날씨, 잡담, 코딩 등)도 이 카테고리로
+         분류하세요. information_agent 내부에서 관련 없는 질문임을 판단해
+         적절히 안내합니다.
+       -  자신에게 맞는 복지를 추천해달라는 문구가 오면 information_agent로 분기시킨다.
+
 
 2. subscription_agent
    정책 알림 구독, 구독 목록 조회, 구독 해지 요청입니다.

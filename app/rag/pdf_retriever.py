@@ -7,10 +7,8 @@ welfare_policy_pdf_vector 벡터 컬렉션 검색기.
 함수를 정의만 해두고 실제로는 호출/반환하지 않아 항상 None을 반환하는
 버그가 있었다. 아래 버전은 해당 버그를 수정한 것이다.
 """
-
-from app.infrastructure.vectorstore.setup_vectorstore import (
-    get_huggingface_vectorstore,
-)
+import asyncio
+from app.infrastructure.vectorstore.setup_vectorstore import get_huggingface_vectorstore
 
 pdf_vectorstore = get_huggingface_vectorstore()
 from fastapi.concurrency import run_in_threadpool

@@ -7,9 +7,7 @@
 """
 from datetime import timedelta
 from typing import Optional
-
 from sqlmodel import Session, select
-
 from app.common.timezone import now_kst
 from app.domain.user.entity.models import AuthSession, User, UserWelfare, UserBackground
 
@@ -47,6 +45,10 @@ class UserRepository:
         self.session.commit()
         self.session.refresh(user)
         return user
+    
+    def get_user_background(self, user_id: int) -> UserBackground:
+        stmt = select(UserBackground).where(UserBackground.user_id == user_id)
+        return self.session.exec(stmt).first()
 
     def update_notification_enabled(self, user: User, enabled: bool) -> User:
         """전역 알림 수신 여부와 계정 변경 시각을 함께 갱신한다."""

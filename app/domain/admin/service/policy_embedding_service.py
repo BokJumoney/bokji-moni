@@ -4,8 +4,7 @@ from pathlib import Path
 import uuid
 
 from langchain_core.documents import Document
-from app.infrastructure.config import settings
-from app.infrastructure.vectorstore.setup_vectorstore import embedding_snow
+from app.infrastructure.vectorstore.setup_vectorstore import get_openai_embedding
 
 
 class PolicyEmbeddingService:
@@ -294,7 +293,7 @@ class PolicyEmbeddingService:
 
     # 이게 메인(텍스트 파일을 임베딩 및 저장)
     async def txtfile_embedding(self, file_path: str):
-        embeddings = embedding_snow
+        embeddings = get_openai_embedding()
 
         text = self.read_policy_text(file_path)
         policies = self.split_policy_blocks(text)
