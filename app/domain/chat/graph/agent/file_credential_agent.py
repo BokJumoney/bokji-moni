@@ -50,20 +50,6 @@ def _conversation_messages(state: ChatState) -> list[BaseMessage]:
     return converted or [HumanMessage(content=question)]
 
 
-def _fallback_tool_name(question: str) -> str:
-    credential_keywords = (
-        "자격",
-        "대상",
-        "신청 가능",
-        "받을 수",
-        "해당되",
-        "조건 충족",
-    )
-    if any(keyword in question for keyword in credential_keywords):
-        return "credential_verification_tool"
-    return "search_form_tool"
-
-
 async def file_credential_agent(state: ChatState) -> dict:
     """신청서 제공 또는 신청 자격 확인 tool을 선택해 실행한다."""
     conversation = _conversation_messages(state)
@@ -72,13 +58,16 @@ async def file_credential_agent(state: ChatState) -> dict:
     )
 
     question = str(state.get("question") or conversation[-1].content)
-    if response.tool_calls:
-        tool_call = response.tool_calls[0]
-        tool_name = tool_call["name"]
-        tool_args = dict(tool_call.get("args", {}))
-    else:
-        tool_name = _fallback_tool_name(question)
-        tool_args = {}
+    tool_calls = response.tool_calls or []
+    if not tool_calls:
+        return {
+            "answer": "요청 처리 도구를 선택하지 못했습니다. 다시 시도해 주세요.",
+            "files": [],
+        }
+
+    tool_call = tool_calls[0]
+    tool_name = tool_call["name"]
+    tool_args = dict(tool_call.get("args", {}))
 
     selected_tool = _TOOL_MAP.get(tool_name)
     if selected_tool is None:
@@ -94,6 +83,7 @@ async def file_credential_agent(state: ChatState) -> dict:
             "configurable": {
                 "messages": conversation,
                 "user_id": state.get("user_id"),
+                "user_background": state.get("user_background"),
             }
         },
     )

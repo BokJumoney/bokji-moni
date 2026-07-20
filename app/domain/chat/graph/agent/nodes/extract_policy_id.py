@@ -10,7 +10,7 @@ async def extract_policy_id(search_form_state: SearchFormState) -> dict:
     if not policy_name:
         return {"service_id": None}
 
-    docs = await search_policy_info(f"{policy_name} 기본정보", 5)
+    docs = await search_policy_info(f"{policy_name} 기본정보")
     candidates: list[tuple[str, str]] = []
     seen: set[str] = set()
     for doc in docs:

@@ -17,15 +17,10 @@ def route_policy_id_extraction(state: SearchFormState) -> str:
         return "policy_id_found"
     return "policy_id_not_found"
 
-def route_credential_extraction(state: CredentialState) -> str:
-    if state.get("credential"):
-        return "credential_found"
-    return "credential_not_found"
-
-def route_background_extraction(state: CredentialState) -> str:
-    user_background = state.get("user_background")
-
-    if user_background:
-        return "user_background_found"
-    return "user_background_not_found"
-
+def route_credential_background(state: CredentialState) -> str:
+    print(f"사용자 배경 : {state.get("user_background")}")
+    if not state.get("credential"):
+        return "credential_not_found"
+    if not state.get("user_background"):
+        return "user_background_not_found"
+    return "credential_background_found"

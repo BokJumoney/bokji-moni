@@ -13,5 +13,5 @@ def policy_forms_not_found_in_state(_state=None):
 def policy_qualification_not_found(_state=None):
     return {"error_message": "자격 조건 데이터가 없어 자격증명을 수행할 수 없습니다."}
 
-def background_not_found(_state=None):
+def user_background_not_found(_state=None):
     return {"error_message": "등록된 사용자 상세 정보가 없어 신청 자격을 확인할 수 없습니다. 먼저 마이페이지에서 복지 정보를 입력해 주세요."}

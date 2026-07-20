@@ -10,6 +10,8 @@ def _messages_from_config(query: str, config: RunnableConfig) -> list:
     messages = config.get("configurable", {}).get("messages")
     return list(messages) if messages else [HumanMessage(content=query)]
 
+def _user_background_from_config(config: RunnableConfig) -> dict:
+    return config.get("configurable", {}).get("user_background")
 
 @tool
 async def credential_verification_tool(query: str, config: RunnableConfig) -> dict:
@@ -20,7 +22,7 @@ async def credential_verification_tool(query: str, config: RunnableConfig) -> di
 
     child_input: CredentialState = {
         "messages": _messages_from_config(query, config),
-        "user_id": user_id,
+        "user_background": _user_background_from_config(config),
     }
     result = await credential_verification_subgraph.ainvoke(child_input)
     answer = result.get("answer") or result.get("error_message")

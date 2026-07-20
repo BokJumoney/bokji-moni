@@ -9,5 +9,5 @@ async def form_search_tool(query: str):
     정책은 있는데 신청서가 없다면 -> 신청서 없음을 반환
     """
     print("form_search_tool 실행")
-    policy_docs = await search_policy_info(query=query, k=5)
+    policy_docs = await search_policy_info(query=query)
     return policy_docs
