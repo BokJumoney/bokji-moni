@@ -99,15 +99,13 @@ def build_subscription_tools(
         return "\n".join(lines)
 
     def get_my_notification_preferences() -> str:
-        """두 알림 설정을 DB에서 읽어 현재 상태를 명시적으로 반환한다."""
+        """알림 설정을 DB에서 읽어 현재 상태를 명시적으로 반환한다."""
         settings = _with_service(
             lambda service: service.get_settings(context.user_id)
         )
         policy_news = "켜짐" if settings.policy_news_enabled else "꺼짐"
-        pause = "켜짐" if settings.is_paused else "꺼짐"
         return (
-            f"전체 정책 소식 수신: {policy_news}\n"
-            f"모든 알림 일시 중지: {pause}"
+            f"전체 정책 소식 수신: {policy_news}"
         )
 
     def subscribe_policy(query: str) -> str:
@@ -170,18 +168,6 @@ def build_subscription_tools(
         value = "받도록" if settings.policy_news_enabled else "받지 않도록"
         return f"전체 정책 소식을 {value} 설정했습니다."
 
-    def set_notification_pause(enabled: bool) -> str:
-        """전체 알림 일시 중지 설정만 변경하고 저장된 결과를 반환한다."""
-        settings = _with_service(
-            lambda service: service.update_pause(context.user_id, enabled)
-        )
-        value = (
-            "일시 중지했습니다"
-            if settings.is_paused
-            else "다시 받도록 설정했습니다"
-        )
-        return f"모든 알림을 {value}."
-
     # 이름과 설명은 모델의 Tool 선택용이고, args_schema는 실행 시 입력 검증용이다.
     return [
         StructuredTool.from_function(
@@ -212,12 +198,6 @@ def build_subscription_tools(
             func=set_policy_news,
             name="set_policy_news",
             description="전체 정책 소식 수신 여부를 변경한다.",
-            args_schema=BooleanSettingInput,
-        ),
-        StructuredTool.from_function(
-            func=set_notification_pause,
-            name="set_notification_pause",
-            description="모든 알림의 일시 중지 여부를 변경한다.",
             args_schema=BooleanSettingInput,
         ),
     ]

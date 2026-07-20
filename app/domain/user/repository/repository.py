@@ -50,7 +50,7 @@ class UserRepository:
 
     def update_notification_enabled(self, user: User, enabled: bool) -> User:
         """전역 알림 수신 여부와 계정 변경 시각을 함께 갱신한다."""
-        user.notification_enabled = enabled
+        user.noti_agreed = enabled
         user.updated_at = now_kst()
         self.session.add(user)
         self.session.commit()

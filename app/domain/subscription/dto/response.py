@@ -14,7 +14,6 @@ class NotificationSettingsResponse(BaseModel):
     """
 
     policy_news_enabled: bool
-    is_paused: bool
     updated_at: datetime
 
 
