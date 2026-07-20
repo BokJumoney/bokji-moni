@@ -1,5 +1,4 @@
 import subprocess
-
 class CmdExecService:
 
     async def run_command(self, command: list[str]) -> str:
