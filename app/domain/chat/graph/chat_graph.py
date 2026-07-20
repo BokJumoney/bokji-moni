@@ -1,7 +1,8 @@
 from langgraph.graph import START, StateGraph, END
 from app.domain.chat.graph.nodes.generate import generate
 from app.domain.chat.graph.nodes.comming_soon import comming_soon
-from app.domain.chat.graph.nodes.intent_router import intent_router   # ← 추가: LLM 부르고 intent 채우는 진짜 노드
+from app.domain.subscription.graph.subscription_graph import subscription_graph
+from app.domain.chat.graph.nodes.intent_router import intent_router
 from app.domain.chat.graph.router.intent_router import route_by_intent
 from app.domain.chat.graph.state2 import ChatState
 from app.domain.chat.graph.nodes.information_agent import information_agent
@@ -10,12 +11,13 @@ from app.domain.chat.graph.router.tool_router import tool_router
 from app.domain.chat.graph.router.post_tool_router import post_tool_router
 from app.domain.chat.graph.router.tool_router_guard import tool_router_with_guard
 
-# 이 그래프는 ChatState 사용
+# 모든 기존 노드가 공유하던 ChatState 구조는 변경하지 않는다.
 graph = StateGraph(ChatState)
 
-graph.add_node("intent_router", intent_router)   # ← 수정: route_by_intent가 아니라 intent_router
+graph.add_node("intent_router", intent_router)
 graph.add_node("information_agent", information_agent)
 graph.add_node("comming_soon", comming_soon)
+graph.add_node("subscription_graph", subscription_graph)
 graph.add_node("tool_executor", tool_executor)
 graph.add_node("generate", generate)
 graph.add_edge(START, "intent_router")
@@ -27,7 +29,8 @@ graph.add_conditional_edges(
     route_by_intent,
     {
         "information_agent": "information_agent",
-        "subscription_agent": "comming_soon",
+        # 구독 분기만 실제 에이전트로 교체하고 자격 확인은 기존 placeholder를 유지한다.
+        "subscription_graph": "subscription_graph",
         "eligibility_agent": "comming_soon",
     },
 )
@@ -53,6 +56,8 @@ graph.add_conditional_edges(
 )
 # -----------------------------------------------------
 graph.add_edge("comming_soon", END)
+# 구독 Tool이 최종 사용자 문구까지 반환하므로 generate 노드를 다시 거치지 않는다.
+graph.add_edge("subscription_graph", END)
 graph.add_edge("generate", END)
 
 graph = graph.compile()

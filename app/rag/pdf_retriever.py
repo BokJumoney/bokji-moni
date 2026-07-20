@@ -6,6 +6,8 @@ welfare_policy_pdf_vector 벡터 컬렉션 검색기.
 import asyncio
 from app.infrastructure.vectorstore.setup_vectorstore import get_huggingface_vectorstore
 
+pdf_vectorstore = get_huggingface_vectorstore()
+
 
 async def policy_pdf_search(query: str, k: int = 5):
     """welfare_policy_pdf_vector 컬렉션에서 정책 상세 문서를 유사도 검색한다."""
