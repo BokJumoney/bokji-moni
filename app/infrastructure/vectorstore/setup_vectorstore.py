@@ -15,9 +15,9 @@ from langchain_postgres import PGVector
 from app.infrastructure.config import settings
 
 # ── 임베딩 ──────────────────────────────────────────────
-embedding_snow = HuggingFaceEmbeddings(
-    model_name=settings.VECTOR_EMBEDDING_MODEL_SNOW,
-)
+# embedding_snow = HuggingFaceEmbeddings(
+#     model_name=settings.VECTOR_EMBEDDING_MODEL_SNOW,
+# )
 
 embedding = OpenAIEmbeddings(
     model=settings.VECTOR_EMBEDDING_MODEL,

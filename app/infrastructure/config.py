@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     # pgvector / Vectorstore 초기 데이터
     VECTOR_COLLECTION_NAME: str = "welfare_policy_vector"
     VECTOR_EMBEDDING_MODEL: str = "text-embedding-3-small"
-    VECTOR_EMBEDDING_MODEL_SNOW: str = "dragonkue/snowflake-arctic-embed-l-v2.0-ko"
+    # VECTOR_EMBEDDING_MODEL_SNOW: str = "dragonkue/snowflake-arctic-embed-l-v2.0-ko"
 
     # PDF 벡터
     VECTOR_PDF_COLLECTION_NAME: str = "welfare_policy_pdf_vector"
