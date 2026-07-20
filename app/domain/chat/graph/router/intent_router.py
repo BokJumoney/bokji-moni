@@ -7,7 +7,7 @@ conditional edges 매핑과 정확히 같은 3개 키를 반환해야 함)
     1. information_agent  : 복지 정책 정보 제공 (지원 대상, 신청 방법, 정책 설명,
                              구비서류 등) + 복지와 무관한 질문도 일단 여기로 보내서
                              내부 general_response_tool이 안내하도록 함
-    2. subscription_agent : 정책 구독/알림 관리 (아직 미구현 -> chat_graph.py에서
+    2. subscription_graph : 정책 구독/알림 관리 (아직 미구현 -> chat_graph.py에서
                              coming_soon으로 매핑됨)
     3. eligibility_agent  : 자격요건 판별 (아직 미구현 -> chat_graph.py에서
                              coming_soon으로 매핑됨)
@@ -35,7 +35,7 @@ router_system = """
          분류하세요. information_agent 내부에서 관련 없는 질문임을 판단해
          적절히 안내합니다.
 
-    2. subscription_agent: 정책 알림/구독 관리 요청
+    2. subscription_graph: 정책 알림/구독 관리 요청
        - 특정 정책이 새로 생기거나 바뀌면 알려달라는 요청
        - 이미 신청해둔 알림(구독) 목록 조회, 구독 해지/변경 요청
 
@@ -49,7 +49,7 @@ router_system = """
 
     [카테고리 구분이 헷갈릴 때 우선순위]
     - "나"/"제 상황"처럼 본인 조건과 대조해달라는 요청이 명확하면 → eligibility_agent
-    - "알림"/"구독"/"새로 생기면 알려줘"가 명확하면 → subscription_agent
+    - "알림"/"구독"/"새로 생기면 알려줘"가 명확하면 → subscription_graph
     - 그 외에는(복지 관련이든 무관하든) 전부 → information_agent
 
     [예시]
@@ -59,9 +59,9 @@ router_system = """
     - "재취업이 안 돼서 파산 직전이야, 도움 받을 데 있을까?" -> information_agent
     - "오늘 날씨 알려줘" -> information_agent
     - "돈 많이 버는 법 알려줘" -> information_agent
-    - "청년 정책 새로 생기면 알림 보내줘" -> subscription_agent
-    - "내가 구독한 정책 목록 보여줘" -> subscription_agent
-    - "청년내일저축계좌 알림 해지해줘" -> subscription_agent
+    - "청년 정책 새로 생기면 알림 보내줘" -> subscription_graph
+    - "내가 구독한 정책 목록 보여줘" -> subscription_graph
+    - "청년내일저축계좌 알림 해지해줘" -> subscription_graph
     - "나 청년내일저축계좌 받을 수 있어? 월급 250만원인데" -> eligibility_agent
     - "제가 이 조건에 해당되는지 확인해주세요" -> eligibility_agent
 
@@ -70,13 +70,13 @@ router_system = """
 
     [출력 형식]
     아래 세 가지 중 하나의 텍스트만 반환하세요:
-    information_agent 또는 subscription_agent 또는 eligibility_agent
+    information_agent 또는 subscription_graph 또는 eligibility_agent
 """
 
 
 class RouteQuery(BaseModel):
     datasource: str = Field(
-        description="information_agent 또는 subscription_agent 또는 eligibility_agent"
+        description="information_agent 또는 subscription_graph 또는 eligibility_agent"
     )
 
 
