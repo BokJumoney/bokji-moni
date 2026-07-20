@@ -17,16 +17,13 @@ class UserProfileResponse(BaseModel):
     updated_at: datetime
 
 
-class UserDetailResponse(BaseModel):
+class UserBackgroundResponse(BaseModel):
     """복지 맞춤 서비스에 사용하는 현재 사용자의 상세정보."""
 
-    birth_date: Optional[date] = None
-    monthly_income: Optional[int] = None
+    income: Optional[int] = None
+    age: Optional[int] = None
     family_size: Optional[int] = None
-    household_type: Optional[str] = None
-    region: Optional[str] = None
-    district: Optional[str] = None
-    has_disability: Optional[bool] = None
+    disability: Optional[bool] = None
     assets: Optional[int] = None
-    employment_status: Optional[str] = None
+    employment_stat: Optional[str] = None
     updated_at: Optional[datetime] = None
