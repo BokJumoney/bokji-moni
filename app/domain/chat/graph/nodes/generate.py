@@ -9,7 +9,7 @@ OLLAMA_BASE_URL = settings.LOCAL_LLM_URL
 
 llm = ChatOpenAI(
     model="gpt-4o",
-    api_key=settings.openai_api_key,
+    api_key=settings.OPENAI_API_KEY,
     temperature=0,
 )
 
