@@ -13,9 +13,14 @@ from app.infrastructure.vectorstore.setup_vectorstore import (
 )
 
 pdf_vectorstore = get_huggingface_vectorstore()
+from fastapi.concurrency import run_in_threadpool
+from app.infrastructure.config import settings
 
 
 async def policy_pdf_search(query: str, k: int = 5):
-    """welfare_policy_pdf_vector 컬렉션에서 정책 상세 문서를 유사도 검색한다."""
-    docs = pdf_vectorstore.similarity_search(query, k=k)
-    return docs
+    from app.infrastructure.vectorstore.setup_vectorstore import (
+        get_vectorstore,
+    )
+
+    vectorstore = get_vectorstore(settings.VECTOR_PDF_COLLECTION_NAME)
+    return await run_in_threadpool(vectorstore.similarity_search, query, k)

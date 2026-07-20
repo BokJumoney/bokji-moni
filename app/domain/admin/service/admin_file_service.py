@@ -1,11 +1,13 @@
 from datetime import datetime, timezone
 from pathlib import Path
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from fastapi import HTTPException, UploadFile, status
 
 
 class AdminFileService:
+    HWP_EXTENSIONS = (".hwp", ".hwpx")
+
     def __init__(self) -> None:
         self.upload_pdf_dir = Path(__file__).resolve().parents[4] / "storage" / "pdf_files"
         self.upload_hwp_dir = Path(__file__).resolve().parents[4] / "storage" / "hwp_files"
@@ -17,6 +19,19 @@ class AdminFileService:
 
     def get_stored_hwp_path(self, stored_filename: str):
         return f"{self.upload_hwp_dir}/{stored_filename}"
+
+    def resolve_hwp_path(self, file_id: UUID | str) -> Path | None:
+        """UUID에 해당하는 실제 HWP/HWPX 저장 파일을 반환한다."""
+        try:
+            normalized_id = UUID(str(file_id)).hex
+        except (TypeError, ValueError):
+            return None
+
+        for extension in self.HWP_EXTENSIONS:
+            candidate = self.upload_hwp_dir / f"{normalized_id}{extension}"
+            if candidate.is_file():
+                return candidate
+        return None
 
     def get_upload_path(self):
         return self.upload_pdf_dir

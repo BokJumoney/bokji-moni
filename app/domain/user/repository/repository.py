@@ -11,7 +11,7 @@ from typing import Optional
 from sqlmodel import Session, select
 
 from app.common.timezone import now_kst
-from app.domain.user.entity.models import AuthSession, User, UserWelfare
+from app.domain.user.entity.models import AuthSession, User, UserWelfare, UserBackground
 
 
 class UserRepository:
@@ -62,6 +62,10 @@ class UserRepository:
             User.noti_agreed == True, User.is_active == True
         )
         return list(self.session.exec(stmt).all())
+
+    def get_user_background(self, user_id: int) -> UserBackground:
+        stmt = select(UserBackground).where(UserBackground.user_id == user_id)
+        return self.session.exec(stmt).first()
 
 
 class AuthSessionRepository:

@@ -163,3 +163,27 @@ class UserWelfare(SQLModel, table=True):
             name="user_welfare_family_size_range",
         ),
     )
+
+class UserBackground(SQLModel, table=True):
+    __tablename__ = "user_background"
+
+    user_id: uuid.UUID = Field(
+        primary_key=True,
+        foreign_key="users.id",  # 실제 유저 테이블명에 맞게 수정
+    )
+
+    income: int | None = Field(default=None, ge=0)
+    age: int | None = Field(default=None, ge=0)
+    family_size: int | None = Field(default=None, ge=1)
+
+    disability: bool | None = Field(default=None)
+    assets: int | None = Field(default=None, ge=0)
+
+    employment_stat: str | None = Field(
+        default=None,
+        max_length=30,
+    )
+
+    updated_at: datetime = Field(
+        default_factory=datetime.now,
+    )
