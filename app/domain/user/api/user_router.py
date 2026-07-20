@@ -5,11 +5,11 @@ from sqlmodel import Session
 
 from app.domain.user.dependencies import get_current_user
 from app.domain.user.dto.user_request import (
-    UserDetailUpdateRequest,
+    UserBackgroundUpdateRequest,
     UserProfileUpdateRequest,
 )
 from app.domain.user.dto.user_response import (
-    UserDetailResponse,
+    UserBackgroundResponse,
     UserProfileResponse,
 )
 from app.domain.user.entity.models import User
@@ -54,28 +54,28 @@ def update_my_profile(
 
 @router.get(
     "/me/welfare-info",
-    response_model=UserDetailResponse,
+    response_model=UserBackgroundResponse,
     summary="내 사용자 상세정보 조회",
 )
-def get_my_detail(
+def get_my_background(
     response: Response,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
-) -> UserDetailResponse:
+) -> UserBackgroundResponse:
     _private_no_store(response)
-    return UserService(session).get_detail(current_user.id)
+    return UserService(session).get_background(current_user.id)
 
 
 @router.patch(
     "/me/welfare-info",
-    response_model=UserDetailResponse,
+    response_model=UserBackgroundResponse,
     summary="내 사용자 상세정보 수정",
 )
-def update_my_detail(
-    body: UserDetailUpdateRequest,
+def update_my_background(
+    body: UserBackgroundUpdateRequest,
     response: Response,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
-) -> UserDetailResponse:
+) -> UserBackgroundResponse:
     _private_no_store(response)
-    return UserService(session).update_detail(current_user.id, body)
+    return UserService(session).update_background(current_user.id, body)

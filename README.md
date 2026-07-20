@@ -266,7 +266,7 @@ APScheduler 기반 백그라운드 스케줄러가 매일 09:00에 알림 그래
 | "월 소득이 80만원이에요" | `{"income": 800000}` |
 | "서울 사는 35살이고 혼자 살아요" | `{"region": "서울", "age": 35, "family_size": 1}` |
 | "장애 3급 판정 받았어요" | `{"disability": {"grade": 3, "has_disability": true}}` |
-| "지금 실업 상태입니다" | `{"employment_status": "unemployed"}` |
+| "지금 실업 상태입니다" | `{"employment_stat": "unemployed"}` |
 
 추출 대상: 소득, 나이, 가구원 수, 가구 유형, 거주 지역, 장애 여부, 재산, 직업 상태
 

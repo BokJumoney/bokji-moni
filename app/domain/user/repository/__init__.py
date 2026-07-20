@@ -1,1 +1,1 @@
-from .repository import UserRepository, AuthSessionRepository, UserWelfareRepository
+from .repository import UserRepository, AuthSessionRepository, UserBackgroundRepository

@@ -28,30 +28,20 @@ class UserProfileUpdateRequest(BaseModel):
         return normalized
 
 
-class UserDetailUpdateRequest(BaseModel):
+class UserBackgroundUpdateRequest(BaseModel):
     """복지 맞춤 서비스에 사용하는 사용자 상세정보의 부분 변경."""
 
-    birth_date: Optional[date] = None
-    monthly_income: Optional[int] = Field(default=None, ge=0)
+    income: Optional[int] = Field(default=None, ge=0)
+    age: Optional[int] = None
     family_size: Optional[int] = Field(default=None, ge=1, le=30)
-    household_type: Optional[str] = Field(default=None, max_length=50)
-    region: Optional[str] = Field(default=None, max_length=100)
-    district: Optional[str] = Field(default=None, max_length=100)
-    has_disability: Optional[bool] = None
+    disability: Optional[bool] = None
     assets: Optional[int] = Field(default=None, ge=0)
-    employment_status: Optional[str] = Field(default=None, max_length=50)
+    employment_stat: Optional[str] = Field(default=None, max_length=50)
 
     model_config = ConfigDict(extra="forbid")
 
-    @field_validator("birth_date")
-    @classmethod
-    def reject_future_birth_date(cls, value: Optional[date]) -> Optional[date]:
-        if value is not None and value > date.today():
-            raise ValueError("생년월일은 미래일 수 없습니다.")
-        return value
-
     @model_validator(mode="after")
-    def require_at_least_one_field(self) -> "UserDetailUpdateRequest":
+    def require_at_least_one_field(self) -> "UserBackgroundUpdateRequest":
         if not self.model_fields_set:
             raise ValueError("변경할 상세정보를 하나 이상 입력해야 합니다.")
         return self
