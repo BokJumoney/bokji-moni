@@ -7,7 +7,9 @@ from app.domain.admin.entity.models import (
     WelfarePolicyHwp,
 )
 from app.domain.welfare.entity.models import WelfarePolicy
-from app.infrastructure.vectorstore.setup_vectorstore import get_pdf_vectorstore
+
+from app.infrastructure.vectorstore.setup_vectorstore import get_vectorstore
+from app.infrastructure.config import settings
 
 
 class AdminRepository:
@@ -40,7 +42,8 @@ class AdminRepository:
         self.session.commit()
 
     def save_pdf_embedding(self, documents: list[Document]):
-        get_pdf_vectorstore().add_documents(documents)
+
+        get_vectorstore(settings.VECTOR_PDF_COLLECTION_NAME).add_documents(documents)
 
     def find_pdf_files(self):
         return list(
@@ -67,3 +70,21 @@ class AdminRepository:
             .order_by(WelfarePolicyHwp.origin_file_name)
         )
         return list(self.session.exec(statement).all())
+
+    def find_hwp_files_by_service_id(
+            self,
+            service_id: str,
+    ) -> list[WelfarePolicyHwp]:
+        statement = (
+            select(WelfarePolicyHwp)
+            .join(
+                PolicyHwpMapping,
+                PolicyHwpMapping.hwp_uuid == WelfarePolicyHwp.hwp_uuid,
+            )
+            .where(PolicyHwpMapping.service_id == service_id)
+        )
+
+        return list(self.session.exec(statement).all())
+
+    def find_hwp_file_by_uuid(self, hwp_uuid) -> WelfarePolicyHwp | None:
+        return self.session.get(WelfarePolicyHwp, hwp_uuid)

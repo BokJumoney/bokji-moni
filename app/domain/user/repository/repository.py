@@ -67,6 +67,10 @@ class UserRepository:
         )
         return list(self.session.exec(stmt).all())
 
+    def get_user_background(self, user_id: int) -> UserBackground:
+        stmt = select(UserBackground).where(UserBackground.user_id == user_id)
+        return self.session.exec(stmt).first()
+
 
 class AuthSessionRepository:
     """auth_sessions 테이블 DB 접근."""

@@ -41,7 +41,7 @@ class ChatService:
     def __init__(self, session: Session):
         self.session = session
         self.repo = ConversationRepository(session)
-        self.user_repo = UserRepository(session) 
+        self.user_repo = UserRepository(session)
 
     # -- message ------------------------------------------------------------
     async def process_message(
@@ -111,11 +111,13 @@ class ChatService:
             )
             ai_content = result.get("answer", "")
             intent = result.get("intent", "General")
+            files = result.get("files", [])
         except Exception as exc:  # noqa: BLE001
             logger.exception("LangGraph 호출 실패: conversation_id=%s", conversation.id)
             # 안전한 오류 메시지 저장 (원문 노출 금지)
             ai_content = "죄송합니다. 답변을 생성하는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요."
             intent = "Error"
+            files = []
 
         # 5. AI 응답 저장 (별도 짧은 transaction)
         await run_in_threadpool(
@@ -126,8 +128,9 @@ class ChatService:
             response=ai_content,
             session_id=str(conversation.id),
             intent=intent,
+            files=files,
         )
-    
+
     def _load_user_context(self, user_id):
         user = self.user_repo.get_by_id(user_id)
         background = self.user_repo.get_user_background(user_id)
