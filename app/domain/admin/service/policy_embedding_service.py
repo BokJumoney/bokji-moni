@@ -5,7 +5,7 @@ import uuid
 
 from langchain_core.documents import Document
 from app.infrastructure.config import settings
-from app.infrastructure.vectorstore.setup_vectorstore import embedding_snow
+from app.infrastructure.vectorstore.setup_vectorstore import embedding
 
 
 class PolicyEmbeddingService:
@@ -14,7 +14,7 @@ class PolicyEmbeddingService:
             "postgresql://"
             "edu:1234@localhost:5432/edudb" 
         )
-        self.EMBEDDING_DIMENSION=1024
+        self.EMBEDDING_DIMENSION = settings.VECTOR_EMBEDDING_DIMENSION
 
     def create_table(self):
         with psycopg.connect(self.CONNECTION_STRING) as conn:
@@ -31,6 +31,33 @@ class PolicyEmbeddingService:
                     );
                     """
                 )
+                cursor.execute(
+                    """
+                    SELECT a.atttypmod
+                    FROM pg_attribute a
+                    WHERE a.attrelid = 'welfare_policy_pdf_vector'::regclass
+                      AND a.attname = 'embedding'
+                    """
+                )
+                current_dimension = cursor.fetchone()[0]
+                if current_dimension != self.EMBEDDING_DIMENSION:
+                    cursor.execute(
+                        "SELECT count(*) FROM welfare_policy_pdf_vector"
+                    )
+                    row_count = cursor.fetchone()[0]
+                    if row_count:
+                        raise RuntimeError(
+                            "기존 PDF 임베딩 테이블의 벡터 차원이 "
+                            f"{current_dimension}입니다. 데이터를 재색인한 뒤 "
+                            f"{self.EMBEDDING_DIMENSION}차원으로 변경해야 합니다."
+                        )
+                    cursor.execute(
+                        f"""
+                        ALTER TABLE welfare_policy_pdf_vector
+                        ALTER COLUMN embedding
+                        TYPE VECTOR({self.EMBEDDING_DIMENSION})
+                        """
+                    )
         print("policies 테이블 생성 완료")
 
     def insert_policy(
@@ -294,7 +321,7 @@ class PolicyEmbeddingService:
 
     # 이게 메인(텍스트 파일을 임베딩 및 저장)
     async def txtfile_embedding(self, file_path: str):
-        embeddings = embedding_snow
+        embeddings = embedding
 
         text = self.read_policy_text(file_path)
         policies = self.split_policy_blocks(text)

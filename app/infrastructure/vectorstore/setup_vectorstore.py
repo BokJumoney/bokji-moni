@@ -9,18 +9,14 @@ from functools import lru_cache
 
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers import EnsembleRetriever
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import OpenAIEmbeddings
 from langchain_postgres import PGVector
 from app.infrastructure.config import settings
 
 # ── 임베딩 ──────────────────────────────────────────────
-embedding_snow = HuggingFaceEmbeddings(
-    model_name=settings.VECTOR_EMBEDDING_MODEL_SNOW,
-)
-
 embedding = OpenAIEmbeddings(
     model=settings.VECTOR_EMBEDDING_MODEL,
+    dimensions=settings.VECTOR_EMBEDDING_DIMENSION,
     api_key=settings.OPENAI_API_KEY,
 )
 
@@ -35,7 +31,7 @@ def get_vectorstore(collection_name) -> PGVector:
     )
 
 @lru_cache(maxsize=1)
-def get_huggingface_vectorstore() -> PGVector:
+def get_pdf_vectorstore() -> PGVector:
     return PGVector(
         connection=settings.database_url,
         embeddings=embedding,
@@ -48,7 +44,7 @@ def get_form_vectorstore() -> PGVector:
     return PGVector(
         connection=settings.database_url,
         embeddings=embedding,
-        collection_name=settings.VECTOR_PDF_COLLECTION_NAME,
+        collection_name=settings.VECTOR_FORM_COLLECTION_NAME,
     )
 
 # ── BM25 (키워드 검색) ─────────────────────────────────
@@ -101,6 +97,8 @@ def reset_retrievers() -> None:
     _bm25_retriever = None
     _ensemble_retriever = None
     get_vectorstore.cache_clear()
+    get_pdf_vectorstore.cache_clear()
+    get_form_vectorstore.cache_clear()
 
 
 def rebuild_bm25() -> None:
