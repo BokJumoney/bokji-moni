@@ -5,10 +5,18 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from app.domain.admin.service.admin_file_service import AdminFileService
 from app.infrastructure.config import settings
+from kiwipiepy import Kiwi
+from rank_bm25 import BM25Okapi
 
 class ExtractDataService:
+    BM25_QUERY = (
+        "정책명 정책 요약 지원 대상 선정 기준 지원 내용 신청 기간 신청 방법 소개"
+        "필요 서류 문의처 근거 법령 기준 정보 출처 위치"
+    )
+
     def __init__(self, admin_file_service: AdminFileService):
         self.admin_file_service = admin_file_service
+        self.kiwi = Kiwi()
 
     def get_openai_model(self) -> ChatOpenAI:
 
@@ -41,13 +49,6 @@ class ExtractDataService:
             f"[파일 문자 수] {len(markdown_text):,}자"
         )
 
-        print(
-            "[파일 앞부분]"
-        )
-        print(
-            repr(markdown_text[:300])
-        )
-
         if not markdown_text.strip():
             raise ValueError(
                 "마크다운 파일이 비어 있습니다."
@@ -65,16 +66,28 @@ class ExtractDataService:
                     "system",
                     """
                     [역할 부여]
-                    당신은 대한민국 복지 정책 문서를 읽고 정책별 정보를 구조화해 추출하는 전문가입니다.
-
-                    반드시 제공된 마크다운 전체 문서 내용만 근거로 분석하세요.
-                    문서에는 하나의 정책만 있을 수도 있고, 여러 개의 정책이 함께 포함될 수도 있습니다.
-                    여러 정책이 발견되면 정책별로 결과 데이터를 분리해서 반환하세요.
-
+                    당신은 대한민국 복지 정책 문서를 읽고 복지 정책별 정보를 구조화해 추출하는 전문가입니다.
+                    
                     [문서 특징]
-                    - 문서는 다양한 복지 정보를 소개하기 위한 사업 정보들입니다.
-                    - 문서 내부에는 1개의 복지 정보 뿐만 아니라 다수의 정책이 포함될 수 있습니다.
+                    - 문서 내용은 다수의 복지 정책을 안내하기 위한 문서일 수 있습니다 유념하여 정보를 추출하세요.
                     - 정책 기준연도, 공고일, 시행일, 신청기간 등은 정책 해석에 중요한 메타데이터입니다.
+                    
+                    [획득 정보]
+                    당신이 얻어야 하는 정책별 정보는 다음과 같습니다.
+                    
+                    - 정책명
+                    - 정책 요약
+                    - 지원 대상
+                    - 선정 기준
+                    - 지원 내용
+                    - 신청 기간
+                    - 신청 방법
+                    - 필요 서류
+                    - 문의처
+                    - 근거 법령
+                    - 기준 정보
+                    - 출처 위치
+                    - 정보 충돌
 
                     [출력 규칙]
                     - 문서에서 직접 확인되는 내용만 사용하세요.
@@ -82,6 +95,7 @@ class ExtractDataService:
                     - 출력 시 ====== 는 각 항목의 구분자로, 아래 요소들을 구분지을 때 사용하세요.
                     - 한 항목의 형식은 `항목: 내용`을 지켜주세요.
                     - 전체 출력 형식은 아래와 같습니다.
+                    - 출력 전에 모든 정책이 중복됐는지 확인 후 중복 시 통합해주세요.
 
                     [출력 형식]
                     [POLICY_START]
@@ -231,6 +245,25 @@ class ExtractDataService:
             markdown_text = self.read_markdown(
                 input_path
             )
+            threshold_ratio = 0.3
+            print(f"[점수 임계 비율] {threshold_ratio}")
+            filtered_chunks = self.filter_md_by_bm25(
+                path=input_path,
+                query=self.BM25_QUERY,
+                threshold_ratio=threshold_ratio
+            )
+
+            if filtered_chunks:
+                markdown_text = "\n\n".join(
+                    chunk
+                    for chunk in filtered_chunks
+                )
+                print(
+                    f"[BM25 선별] {len(filtered_chunks)}개 청크, "
+                    f"{len(markdown_text):,}자"
+                )
+            else:
+                print("[BM25 선별] 일치 청크가 없어 원문 전체를 사용합니다.")
 
             result_text = (
                 self.convert_markdown_to_embedding_text(
@@ -253,3 +286,85 @@ class ExtractDataService:
                 f"[오류] "
                 f"{type(error).__name__}: {error}"
             )
+
+    def read_text_file(self, path: str | Path) -> str:
+        """UTF-8 텍스트 파일을 읽는다."""
+        return Path(path).read_text(encoding="utf-8")
+
+    def tokenize(self, text: str) -> list[str]:
+        """Kiwi를 이용해 BM25 검색에 사용할 형태소를 추출한다."""
+        return [
+            token.form
+            for token in self.kiwi.tokenize(text)
+            if token.tag.startswith(("N", "V", "M"))
+        ]
+
+    def split_markdown(
+            self,
+            text: str,
+            separator: str = "##",
+    ) -> list[str]:
+        """마크다운 텍스트를 지정된 구분자로 나눈다."""
+        return [
+            chunk.strip()
+            for chunk in text.split(separator)
+            if chunk.strip()
+        ]
+
+    def filter_md_by_bm25(
+            self,
+            path: str | Path,
+            query: str,
+            threshold_ratio: float = 0.3,
+            separator: str = "##",
+    ) -> list[str]:
+        """
+        Markdown 문서를 청크로 나눈 후 BM25 점수가
+        최고 점수의 threshold_ratio 이상인 청크를 반환한다.
+
+        원본 문서 순서를 유지한다.
+        """
+        if not 0 <= threshold_ratio <= 1:
+            raise ValueError(
+                "threshold_ratio는 0 이상 1 이하이어야 합니다."
+            )
+
+        markdown_text = self.read_text_file(path)
+        chunks = self.split_markdown(markdown_text, separator)
+
+        if not chunks:
+            return []
+
+        # BM25 계산용 형태소 토큰
+        tokenized_docs = [
+            self.tokenize(chunk)
+            for chunk in chunks
+        ]
+
+        tokenized_query = self.tokenize(query)
+
+        if not tokenized_query:
+            raise ValueError("검색어에서 유효한 형태소를 추출하지 못했습니다.")
+
+        bm25 = BM25Okapi(tokenized_docs)
+
+        # scores[i]는 chunks[i]의 점수
+        scores = bm25.get_scores(tokenized_query)
+
+        max_score = float(max(scores))
+
+        if max_score <= 0:
+            return []
+
+        threshold_score = max_score * threshold_ratio
+
+        results = []
+
+        # 정렬하지 않으므로 원본 문서 순서 유지
+        for index, (chunk, score) in enumerate(zip(chunks, scores)):
+            score = float(score)
+
+            if score >= threshold_score:
+                results.append(chunk)
+
+        return results

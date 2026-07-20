@@ -22,13 +22,6 @@ def get_openai_embedding() -> OpenAIEmbeddings:
         api_key=settings.OPENAI_API_KEY,
     )
 
-
-# @lru_cache(maxsize=1)
-# def get_snow_embedding():
-#     from langchain_huggingface import HuggingFaceEmbeddings
-#
-#     return HuggingFaceEmbeddings(model_name=settings.VECTOR_EMBEDDING_MODEL_SNOW)
-
 # ── PGVector ────────────────────────────────────────────
 @lru_cache(maxsize=1) # @lru_cache: 같은 인수를 전달했던 호출 결과가 이미 캐시되어 있으면 함수를 실행하지 않고 캐시 결과를 반환
 def get_vectorstore(collection_name) -> PGVector:
@@ -117,6 +110,7 @@ def reset_retrievers() -> None:
     _bm25_retriever = None
     _ensemble_retriever = None
     get_vectorstore.cache_clear()
+    get_pdf_vectorstore.cache_clear()
     get_policy_vectorstore.cache_clear()
 
 

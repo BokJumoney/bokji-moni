@@ -6,17 +6,17 @@ from sqlmodel import Session
 
 from app.common.timezone import now_kst
 from app.domain.user.dto.user_request import (
-    UserDetailUpdateRequest,
+    UserBackgroundUpdateRequest,
     UserProfileUpdateRequest,
 )
 from app.domain.user.dto.user_response import (
-    UserDetailResponse,
+    UserBackgroundResponse,
     UserProfileResponse,
 )
-from app.domain.user.entity.models import User, UserWelfare
+from app.domain.user.entity.models import User, UserBackground
 from app.domain.user.repository.repository import (
     UserRepository,
-    UserWelfareRepository,
+    UserBackgroundRepository,
 )
 
 
@@ -25,7 +25,7 @@ class UserService:
 
     def __init__(self, session: Session):
         self.user_repository = UserRepository(session)
-        self.detail_repository = UserWelfareRepository(session)
+        self.background_repository = UserBackgroundRepository(session)
 
     @staticmethod
     def profile_response(user: User) -> UserProfileResponse:
@@ -45,45 +45,41 @@ class UserService:
         updated = self.user_repository.update_name(user, request.name)
         return self.profile_response(updated)
 
-    def get_detail(self, user_id: UUID) -> UserDetailResponse:
-        detail = self.detail_repository.get_by_user_id(user_id)
-        return self.detail_response(detail)
+    def get_background(self, user_id: UUID) -> UserBackgroundResponse:
+        background = self.background_repository.get_by_user_id(user_id)
+        return self.background_response(background)
 
-    def update_detail(
+    def update_background(
         self,
         user_id: UUID,
-        request: UserDetailUpdateRequest,
-    ) -> UserDetailResponse:
+        request: UserBackgroundUpdateRequest,
+    ) -> UserBackgroundResponse:
         fields = request.model_dump(exclude_unset=True)
-        detail = self.detail_repository.get_by_user_id(user_id)
+        background = self.background_repository.get_by_user_id(user_id)
 
-        if detail is None:
+        if background is None:
             now = now_kst()
-            detail = UserWelfare(
+            background = UserBackground(
                 user_id=user_id,
-                created_at=now,
                 updated_at=now,
                 **fields,
             )
-            detail = self.detail_repository.create(detail)
+            background = self.background_repository.create(background)
         else:
-            detail = self.detail_repository.update_fields(detail, fields)
+            background = self.background_repository.update_fields(background, fields)
 
-        return self.detail_response(detail)
+        return self.background_response(background)
 
     @staticmethod
-    def detail_response(detail: UserWelfare | None) -> UserDetailResponse:
-        if detail is None:
-            return UserDetailResponse()
-        return UserDetailResponse(
-            birth_date=detail.birth_date,
-            monthly_income=detail.monthly_income,
-            family_size=detail.family_size,
-            household_type=detail.household_type,
-            region=detail.region,
-            district=detail.district,
-            has_disability=detail.has_disability,
-            assets=detail.assets,
-            employment_status=detail.employment_status,
-            updated_at=detail.updated_at,
+    def background_response(background: UserBackground | None) -> UserBackgroundResponse:
+        if background is None:
+            return UserBackgroundResponse()
+        return UserBackgroundResponse(
+            income=background.income,
+            age=background.age,
+            family_size=background.family_size,
+            disability=background.disability,
+            assets=background.assets,
+            employment_stat=background.employment_stat,
+            updated_at=background.updated_at,
         )

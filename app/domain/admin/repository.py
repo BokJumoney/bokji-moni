@@ -7,6 +7,7 @@ from app.domain.admin.entity.models import (
     WelfarePolicyHwp,
 )
 from app.domain.welfare.entity.models import WelfarePolicy
+
 from app.infrastructure.vectorstore.setup_vectorstore import get_vectorstore
 from app.infrastructure.config import settings
 
@@ -41,6 +42,7 @@ class AdminRepository:
         self.session.commit()
 
     def save_pdf_embedding(self, documents: list[Document]):
+
         get_vectorstore(settings.VECTOR_PDF_COLLECTION_NAME).add_documents(documents)
 
     def find_pdf_files(self):
