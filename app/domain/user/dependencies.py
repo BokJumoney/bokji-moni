@@ -11,10 +11,14 @@ from datetime import datetime
 from fastapi import Depends, HTTPException, Request, status
 from sqlmodel import Session
 
-from app.common.exceptions import AuthenticationRequiredError, SessionExpiredError
+from app.common.exceptions import (
+    AuthenticationRequiredError,
+    ForbiddenError,
+    SessionExpiredError,
+)
 from app.common.security import hash_session_token
 from app.common.timezone import as_kst, now_kst
-from app.domain.user.entity.models import User
+from app.domain.user.entity.models import User, UserRole
 from app.domain.user.repository.repository import AuthSessionRepository, UserRepository
 from app.infrastructure.config import settings
 from app.infrastructure.db.connection import get_session
@@ -113,4 +117,17 @@ def get_current_user(
             auth_session, settings.SESSION_IDLE_MINUTES
         )
 
+    return user
+
+
+def get_current_admin(
+    user: User = Depends(get_current_user),
+) -> User:
+    """현재 사용자가 관리자인지 확인하고, 아니면 접근을 거부한다."""
+    if user.role != UserRole.ADMIN.value:
+        exc = ForbiddenError()
+        raise HTTPException(
+            status_code=exc.status_code,
+            detail={"code": exc.code, "message": exc.message},
+        )
     return user

@@ -3,9 +3,13 @@ from sqlmodel import Session, select
 
 from app.domain.welfare.entity.models import WelfarePolicy
 from app.infrastructure.db.connection import get_session
+from app.domain.user.dependencies import get_current_admin
 
-router = APIRouter(prefix="/admin", tags=["admin"])
-
+router = APIRouter(
+    prefix="/admin",
+    tags=["admin"],
+    dependencies=[Depends(get_current_admin)],
+)
 
 @router.get("/policies")
 def get_policies(session: Session = Depends(get_session)):

@@ -1,31 +1,15 @@
-"""
-Answer Generator.
-
-tool_executor가 모아온 근거 자료(state.context)를 바탕으로 최종
-자연어 답변을 만든다. general_response_tool만 실행된 경우엔 이
-노드 자체가 호출되지 않는다(post_tool_router.py 참고).
-
-tool 선택(information_agent)은 gpt-4o-mini(저렴/빠름)를 쓰고,
-최종 답변 생성은 좀 더 좋은 모델(gpt-4o)을 쓰도록 역할을 분리했다.
-
-[구비서류 체크리스트 포맷팅] "구비서류/필요서류/체크리스트/준비물"을
-묻는 질문은 문장으로 풀어쓰지 않고 체크박스 목록으로 정리하도록
-프롬프트에 별도 규칙을 추가했다. 프론트엔드가 마크다운을 렌더링하지
-않는 환경도 있을 수 있어 "- [ ]" 대신 어디서나 그대로 텍스트로 보이는
-유니코드 체크박스(☐)를 쓰도록 지정했다. 마크다운 렌더링 환경이라면
-"- [ ]"로 바꿔도 된다.
-"""
-
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
 from app.domain.chat.graph.state2 import ChatState
 from app.infrastructure.config import settings
 
+OLLAMA_MODEL = settings.LOCAL_MODEL
+OLLAMA_BASE_URL = settings.LOCAL_LLM_URL
 
 llm = ChatOpenAI(
     model="gpt-4o",
-    api_key=settings.OPENAI_API_KEY,
+    api_key=settings.openai_api_key,
     temperature=0,
 )
 
