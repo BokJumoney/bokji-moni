@@ -8,6 +8,7 @@ from app.domain.chat.graph.nodes.information_agent import information_agent
 from app.domain.chat.graph.nodes.tool_executor import tool_executor
 from app.domain.chat.graph.router.tool_router import tool_router
 from app.domain.chat.graph.router.post_tool_router import post_tool_router
+from app.domain.chat.graph.router.tool_router_guard import tool_router_with_guard
 
 # 이 그래프는 ChatState 사용
 graph = StateGraph(ChatState)
@@ -33,10 +34,11 @@ graph.add_conditional_edges(
 # --- 여기부터가 "Agent(Tool 선택)" 배선 ---
 graph.add_conditional_edges(
     "information_agent",
-    tool_router,
+    tool_router_with_guard,
     {
         "tool_executor": "tool_executor",
         "generate": "generate",
+        "end": END,  
     },
 )
 # tool_executor 다음: general_response_tool만 실행됐으면 generate 없이 바로 끝,

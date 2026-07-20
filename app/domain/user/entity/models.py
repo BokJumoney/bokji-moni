@@ -9,11 +9,9 @@ import uuid
 from datetime import date, datetime
 from enum import Enum
 from typing import Optional
-
 from sqlalchemy import BigInteger, CheckConstraint, Column, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlmodel import Field, SQLModel
-
 from app.common.timezone import now_kst
 
 
@@ -68,6 +66,7 @@ class AuthSession(SQLModel, table=True):
         default_factory=uuid.uuid4,
         primary_key=True,
     )
+
     token_hash: str = Field(max_length=64, unique=True, index=True, nullable=False)
     user_id: uuid.UUID = Field(foreign_key="users.id", nullable=False, index=True)
     created_at: datetime = Field(default_factory=_utcnow, nullable=False)
@@ -158,4 +157,29 @@ class UserWelfare(SQLModel, table=True):
             "family_size IS NULL OR (family_size >= 1 AND family_size <= 30)",
             name="user_welfare_family_size_range",
         ),
+    )
+
+
+class UserBackground(SQLModel, table=True):
+    __tablename__ = "user_background"
+
+    user_id: uuid.UUID = Field(
+        primary_key=True,
+        foreign_key="users.id",  # 실제 유저 테이블명에 맞게 수정
+    )
+
+    income: int | None = Field(default=None, ge=0)
+    age: int | None = Field(default=None, ge=0)
+    family_size: int | None = Field(default=None, ge=1)
+
+    disability: bool | None = Field(default=None)
+    assets: int | None = Field(default=None, ge=0)
+
+    employment_stat: str | None = Field(
+        default=None,
+        max_length=30,
+    )
+
+    updated_at: datetime = Field(
+        default_factory=datetime.now,
     )

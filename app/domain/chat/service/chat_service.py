@@ -16,14 +16,14 @@ from typing import Optional
 from fastapi.concurrency import run_in_threadpool
 from sqlmodel import Session
 
-from app.common.exceptions import ChatError, ChatSessionNotFoundError
+from app.common.exceptions import ChatSessionNotFoundError
 from app.domain.chat.dto.response import (
     ChatMessageResponse,
     ChatSessionListItem,
     ChatSessionListResponse,
     ConversationMessage,
 )
-from app.domain.chat.entity.models import Conversation, Message
+from app.domain.chat.entity.models import Message
 from app.domain.chat.graph.chat_graph import graph
 from app.domain.chat.repository import ConversationRepository
 from app.domain.chat.utils import (
@@ -31,7 +31,7 @@ from app.domain.chat.utils import (
     encode_cursor,
     normalize_title,
 )
-
+from app.domain.user.repository import UserRepository
 logger = logging.getLogger(__name__)
 
 
@@ -41,6 +41,7 @@ class ChatService:
     def __init__(self, session: Session):
         self.session = session
         self.repo = ConversationRepository(session)
+        self.user_repo = UserRepository(session) 
 
     # -- message ------------------------------------------------------------
     async def process_message(
@@ -50,6 +51,11 @@ class ChatService:
         session_id: Optional[uuid.UUID] = None,
     ) -> ChatMessageResponse:
         """사용자 메시지 → 채팅방 확보 → 저장 → LangGraph → AI 응답 저장."""
+
+        # 3.5. 유저 정보 + 백그라운드 조회 (같은 user_id, 다른 테이블)
+        user, user_background = await run_in_threadpool(
+            self._load_user_context, user_id
+        )
         # 1. 채팅방 확보 (동기 DB 호출은 threadpool 에서)
         if session_id is None:
             conversation = await run_in_threadpool(
@@ -78,17 +84,29 @@ class ChatService:
             {"role": m.role, "content": m.content} for m in history[:-1]
         ]
 
+        user_info = {"name": user.name, "email": user.email} if user else None
+        background = (
+            {
+                "income": user_background.income,
+                "age": user_background.age,
+                "family_size": user_background.family_size,
+                "disability": user_background.disability,
+                "assets": user_background.assets,
+                "employment_stat": user_background.employment_stat,
+            }
+            if user_background
+            else None
+        )
+
         # 4. LangGraph 호출 (DB transaction 밖에서)
-        #
-        # 주의: 지금 ChatState(state2.py)는 question / intent / messages /
-        # context / answer 중심으로 구성되어 있다. "documents", "generation"은
-        # 예전 State(state.py, ChatGraphState)의 흔적이라 지금 그래프에서는
-        # 안 쓰인다. result.get("generation", ...)으로 읽으면 그런 키가 없어서
-        # 항상 빈 문자열만 나온다 - 실제 답변은 result["answer"]에 들어있다.
         try:
             result = await graph.ainvoke(
                 {
                     "question": message,
+                    "user_id": str(user_id),
+                    "user_info": user_info,
+                    "user_background": background,
+                    "chat_history": chat_history,
                 }
             )
             ai_content = result.get("answer", "")
@@ -109,6 +127,11 @@ class ChatService:
             session_id=str(conversation.id),
             intent=intent,
         )
+    
+    def _load_user_context(self, user_id):
+        user = self.user_repo.get_by_id(user_id)
+        background = self.user_repo.get_user_background(user_id)
+        return user, background
 
     def _load_history_for_graph(
         self,
