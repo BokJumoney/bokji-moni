@@ -57,6 +57,12 @@ class UserRepository:
         self.session.refresh(user)
         return user
 
+    def get_noti_agreed_users(self) -> list[User]: # 신규 알림 구독자 조회
+        stmt = select(User).where(
+            User.noti_agreed == True, User.is_active == True
+        )
+        return list(self.session.exec(stmt).all())
+
 
 class AuthSessionRepository:
     """auth_sessions 테이블 DB 접근."""

@@ -48,12 +48,16 @@ def init_sqlmodel_table(df: DataFrame) -> list[dict]:
                 service_id=row["서비스ID"],
                 service_name=row["서비스명"],
             ))
-            wp_list.append(
-                {
-                    "service_id": row["서비스ID"],
-                    "service_name": row["서비스명"],
-                }
-            )
+            # 이메일 전송 그래프로 갈 신규 복지 정책 리스트
+            policy = {
+                "service_id": row["서비스ID"],
+                "service_name": row["서비스명"],
+            }
+            # 나머지 컬럼은 한글 이름 그대로 전부 담는다
+            for col, value in row.items():
+                if col not in ("서비스ID", "서비스명"):
+                    policy[col] = value
+            wp_list.append(policy)
         session.commit()
         print(f"SQLModel 동기화 완료: {len(df)}행")
     finally:

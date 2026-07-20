@@ -1,7 +1,11 @@
 def format_policy(policies: list[dict]) -> str:
-
-    policies_text = "\n\n".join(f"### {policy['service_name']} (ID: {policy['service_id']})\n"
-                                + "\n".join(f"[{ct}]\n{policy_content}" for ct, policy_content in policy.items())
-                                for policy in policies)
-
-    return policies_text
+    blocks = []
+    for policy in policies:
+        lines = [f"### {policy['service_name']} (ID: {policy['service_id']})"]
+        for key, value in policy.items():
+            if key in ("service_id", "service_name"):
+                continue  # 헤더에 이미 있음
+            if value:  # 빈 문자열 필드는 생략
+                lines.append(f"[{key}]\n{value}")
+        blocks.append("\n".join(lines))
+    return "\n\n".join(blocks)
