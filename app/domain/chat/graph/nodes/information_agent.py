@@ -73,7 +73,14 @@ async def information_agent(state: ChatState) -> dict:
     question = state["question"]
 
     response = await _llm_with_tools.ainvoke(
-        [SystemMessage(content=SYSTEM_PROMPT), HumanMessage(content=question)]
+        [SystemMessage(content=SYSTEM_PROMPT), HumanMessage(content=question)],
+        config={
+            "configurer":
+                {
+                    "messages": state.get("messages"),
+                    "user_background": state.get("user_background"),
+                }
+        }
     )
 
     tool_calls = getattr(response, "tool_calls", None) or []

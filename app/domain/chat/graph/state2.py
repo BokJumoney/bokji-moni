@@ -11,12 +11,14 @@ from typing import Annotated, TypedDict, NotRequired
 
 from langgraph.graph.message import add_messages
 
+
 class ChatState(TypedDict):
     question: str                       # 사용자 원문 질문
     intent: str                         # intent_router 결과
     messages: Annotated[list, add_messages]  # Agent/Tool 메시지 누적
     context: list[str]                  # tool_executor가 채우는 근거 텍스트
     answer: str                         # generate.py 최종 응답
+    files: list[dict[str, str]]         # 신청서 다운로드 메타데이터
     user_id: NotRequired[str]
     user_background: NotRequired[dict]  # UserBackground 테이블 정보
     # 인증된 사용자 식별자다.

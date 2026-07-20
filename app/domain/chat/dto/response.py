@@ -9,7 +9,13 @@ from datetime import datetime
 from typing import List, Optional, Dict
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class ChatFileResponse(BaseModel):
+    fileId: str
+    originalFilename: str
+    downloadUrl: str
 
 
 class ChatMessageResponse(BaseModel):
@@ -19,6 +25,7 @@ class ChatMessageResponse(BaseModel):
     user_info_updated: bool = False
     needs_followup: bool = False
     sources: Optional[List[Dict]] = None
+    files: List[ChatFileResponse] = Field(default_factory=list)
 
 
 class ConversationMessage(BaseModel):

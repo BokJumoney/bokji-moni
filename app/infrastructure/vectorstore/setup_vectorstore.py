@@ -9,20 +9,25 @@ from functools import lru_cache
 
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers import EnsembleRetriever
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import OpenAIEmbeddings
 from langchain_postgres import PGVector
 from app.infrastructure.config import settings
 
-# ── 임베딩 ──────────────────────────────────────────────
-embedding_snow = HuggingFaceEmbeddings(
-    model_name=settings.VECTOR_EMBEDDING_MODEL_SNOW,
-)
 
-embedding = OpenAIEmbeddings(
-    model=settings.VECTOR_EMBEDDING_MODEL,
-    api_key=settings.OPENAI_API_KEY,
-)
+# ── 임베딩 ──────────────────────────────────────────────
+@lru_cache(maxsize=1)
+def get_openai_embedding() -> OpenAIEmbeddings:
+    return OpenAIEmbeddings(
+        model=settings.VECTOR_EMBEDDING_MODEL,
+        api_key=settings.OPENAI_API_KEY,
+    )
+
+
+# @lru_cache(maxsize=1)
+# def get_snow_embedding():
+#     from langchain_huggingface import HuggingFaceEmbeddings
+#
+#     return HuggingFaceEmbeddings(model_name=settings.VECTOR_EMBEDDING_MODEL_SNOW)
 
 # ── PGVector ────────────────────────────────────────────
 @lru_cache(maxsize=1) # @lru_cache: 같은 인수를 전달했던 호출 결과가 이미 캐시되어 있으면 함수를 실행하지 않고 캐시 결과를 반환
@@ -30,15 +35,26 @@ def get_vectorstore(collection_name) -> PGVector:
     """langchain_postgres.PGVector 인스턴스를 반환 (싱글톤)."""
     return PGVector(
         connection=settings.database_url,
-        embeddings=embedding,
+        embeddings=get_openai_embedding(),
         collection_name=collection_name,
     )
 
 @lru_cache(maxsize=1)
-def get_huggingface_vectorstore() -> PGVector:
+def get_policy_vectorstore() -> PGVector:
+    """정책 기본정보용 HuggingFace PGVector 컬렉션을 반환한다."""
     return PGVector(
         connection=settings.database_url,
-        embeddings=embedding,
+        embeddings=get_openai_embedding(),
+        collection_name=settings.VECTOR_COLLECTION_NAME,
+    )
+
+
+@lru_cache(maxsize=1)
+def get_huggingface_vectorstore() -> PGVector:
+    """관리자가 업로드한 정책 PDF용 PGVector 컬렉션을 반환한다."""
+    return PGVector(
+        connection=settings.database_url,
+        embeddings=get_openai_embedding(),
         collection_name=settings.VECTOR_PDF_COLLECTION_NAME,
     )
 
@@ -47,7 +63,7 @@ def get_huggingface_vectorstore() -> PGVector:
 def get_form_vectorstore() -> PGVector:
     return PGVector(
         connection=settings.database_url,
-        embeddings=embedding,
+        embeddings=get_openai_embedding(),
         collection_name=settings.VECTOR_PDF_COLLECTION_NAME,
     )
 
@@ -84,7 +100,7 @@ def get_ensemble_retriever() -> EnsembleRetriever:
     """
     global _ensemble_retriever
     if _ensemble_retriever is None:
-        pgvector_retriever = get_vectorstore(settings.VECTOR_COLLECTION_NAME).as_retriever(
+        pgvector_retriever = get_policy_vectorstore().as_retriever(
             search_kwargs={"k": 3}
         )
         bm25 = get_bm25_retriever()
@@ -101,6 +117,7 @@ def reset_retrievers() -> None:
     _bm25_retriever = None
     _ensemble_retriever = None
     get_vectorstore.cache_clear()
+    get_policy_vectorstore.cache_clear()
 
 
 def rebuild_bm25() -> None:
