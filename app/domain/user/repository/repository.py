@@ -28,6 +28,11 @@ class UserRepository:
         stmt = select(User).where(User.id == user_id)
         return self.session.exec(stmt).first()
 
+    def get_by_id_for_update(self, user_id) -> Optional[User]:
+        """알림 설정 변경이 끝날 때까지 사용자 행을 잠근다."""
+        stmt = select(User).where(User.id == user_id).with_for_update()
+        return self.session.exec(stmt).first()
+
     def create(self, user: User) -> User:
         self.session.add(user)
         self.session.commit()
@@ -42,6 +47,21 @@ class UserRepository:
         self.session.commit()
         self.session.refresh(user)
         return user
+
+    def update_notification_enabled(self, user: User, enabled: bool) -> User:
+        """전역 알림 수신 여부와 계정 변경 시각을 함께 갱신한다."""
+        user.noti_agreed = enabled
+        user.updated_at = now_kst()
+        self.session.add(user)
+        self.session.commit()
+        self.session.refresh(user)
+        return user
+
+    def get_noti_agreed_users(self) -> list[User]: # 신규 알림 구독자 조회
+        stmt = select(User).where(
+            User.noti_agreed == True, User.is_active == True
+        )
+        return list(self.session.exec(stmt).all())
 
 
 class AuthSessionRepository:

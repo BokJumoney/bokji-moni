@@ -10,7 +10,8 @@ repo root에서 실행:
 """
 import pandas as pd
 from langchain_core.documents import Document
-from sqlmodel import Session, select
+from pandas import DataFrame
+from sqlmodel import Session, text
 
 from app.domain.welfare.entity.models import WelfarePolicy
 from app.domain.welfare.service import chunker
@@ -32,6 +33,8 @@ def read_csv_and_split_text( csv_path: str ) -> list[Document]:
     df = pd.read_csv(csv_path, encoding="utf-8-sig")
     documents: list[Document] = []
 
+    #청킹 전에 RDB 적재
+    _init_sqlmodel_table(df)
     #csv를 청킹해서 df로 바꿈
     chunked_df = chunker.chunk_dataframe(df)
 
@@ -42,7 +45,10 @@ def read_csv_and_split_text( csv_path: str ) -> list[Document]:
                 metadata={
                     "service_id": row["service_id"],
                     "service_name": row["service_name"],
-                    "chunk_type": row["chunk_type"],
+                    "service_depart": row["service_depart"],
+                    "service_target_household": row["service_target_household"],
+                    "service_target_age": row["service_target_age"],
+                    "chunk_type": row["chunk_type"]
                 },
             )
         )
@@ -54,21 +60,21 @@ def read_csv_and_split_text( csv_path: str ) -> list[Document]:
 def load_chunks_for_bm25() -> list[Document]:
     """
     BM25Retriever용 전체 청크 로드.
-
-    CSV는 초기 적재 이후 API 업데이트로 낡아지므로,
-    적재 시마다 동기화되는 WelfarePolicy 테이블을 원본으로 사용한다.
+    VectorDB collection_id - welfare_policy_vector 에서 조회한다.
     """
     session: Session = next(get_session())
+    sql = '''
+            SELECT e.document, e.cmetadata
+            FROM langchain_pg_embedding e
+            JOIN langchain_pg_collection c ON e.collection_id = c.uuid
+            WHERE c.name = :collection_name
+    '''
     try:
-        rows = session.exec(select(WelfarePolicy)).all()
+        rows = session.exec(text(sql), params={"collection_name": settings.VECTOR_COLLECTION_NAME}).all()
         return [
             Document(
-                page_content=row.page_content,
-                metadata={
-                    "service_id": row.service_id,
-                    "service_name": row.service_name,
-                    "chunk_type": row.chunk_type,
-                },
+                page_content=row.document,
+                metadata=row.cmetadata,
             )
             for row in rows
         ]
@@ -76,7 +82,7 @@ def load_chunks_for_bm25() -> list[Document]:
         session.close()
 
 
-def _sync_to_sqlmodel(chunks: list[Document]) -> None:
+def _init_sqlmodel_table(df: DataFrame) -> None:
     """WelfarePolicy SQLModel 테이블에 정형 메타데이터 동기화."""
     session: Session = next(get_session())
     try:
@@ -85,16 +91,13 @@ def _sync_to_sqlmodel(chunks: list[Document]) -> None:
         session.exec(delete(WelfarePolicy))
         session.commit()
 
-        for chunk in chunks:
-            m = chunk.metadata
+        for _, row in df.iterrows():
             session.add(WelfarePolicy(
-                service_id=m["service_id"],
-                service_name=m["service_name"],
-                chunk_type=m["chunk_type"],
-                page_content=chunk.page_content,
+                service_id=row["서비스ID"],
+                service_name=row["서비스명"],
             ))
         session.commit()
-        print(f"SQLModel 동기화 완료: {len(chunks)}행")
+        print(f"SQLModel 동기화 완료: {len(df)}행")
     finally:
         session.close()
 
@@ -129,20 +132,31 @@ def ingest_to_pgvector(csv_path: str | None = None) -> int:
     # 2. BM25Retriever 초기화 (in-memory)
     _init_bm25_retriever(chunks)
 
-    # 3. SQLModel 테이블 동기화
-    _sync_to_sqlmodel(chunks)
-
     return total
 
 
 def is_ingested() -> bool:
-    """PGVector 컬렉션에 문서가 존재하는지 확인."""
+    session: Session = next(get_session())
     try:
-        vectorstore = get_vectorstore(settings.VECTOR_COLLECTION_NAME)
-        results = vectorstore.similarity_search("복지", k=1)
-        return len(results) > 0
-    except Exception:
-        return False
+        # 최초 기동 시, PGVector 테이블 자체가 없는 것도 처리한다.
+        table = session.exec(text("SELECT to_regclass('langchain_pg_embedding')")).first()
+        if table is None or table[0] is None:
+            return False
+
+        sql = '''
+                SELECT 1
+                FROM langchain_pg_embedding e
+                JOIN langchain_pg_collection c ON e.collection_id = c.uuid
+                WHERE c.name = :collection_name
+                LIMIT 1
+        '''
+        row = session.exec(text(sql), params={"collection_name": settings.VECTOR_COLLECTION_NAME}).first()
+        if row is None:
+            return False
+        else:
+            return True
+    finally:
+        session.close()
 
 
 def ensure_ingested() -> None:

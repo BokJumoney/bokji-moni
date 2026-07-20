@@ -12,18 +12,5 @@ from sqlmodel import SQLModel, Field
 class WelfarePolicy(SQLModel, table=True):
     __tablename__ = "welfare_policies"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
-
-    # 정형 메타데이터
-    service_id: str = Field(index=True)
+    service_id: str = Field(default=None, primary_key=True)
     service_name: str = Field(index=True)
-    chunk_type: str = Field(index=True)
-
-    # 본문 (서술형)
-    page_content: str
-
-class Policy(SQLModel, table=True):
-    __tablename__ = "policies"
-
-    service_id: str = Field(primary_key=True)
-    service_name: str = Field(max_length=25)

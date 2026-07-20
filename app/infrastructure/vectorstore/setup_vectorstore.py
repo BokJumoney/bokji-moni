@@ -9,17 +9,19 @@ from functools import lru_cache
 
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers import EnsembleRetriever
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import OpenAIEmbeddings
 from langchain_postgres import PGVector
-from langchain_huggingface import HuggingFaceEmbeddings
 from app.infrastructure.config import settings
 
-embedding_snow = HuggingFaceEmbeddings(model_name=settings.VECTOR_EMBEDDING_MODEL_SNOW)
-
-
 # ── 임베딩 ──────────────────────────────────────────────
+embedding_snow = HuggingFaceEmbeddings(
+    model_name=settings.VECTOR_EMBEDDING_MODEL_SNOW,
+)
+
 embedding = OpenAIEmbeddings(
     model=settings.VECTOR_EMBEDDING_MODEL,
+    api_key=settings.OPENAI_API_KEY,
 )
 
 # ── PGVector ────────────────────────────────────────────
@@ -36,7 +38,7 @@ def get_vectorstore(collection_name) -> PGVector:
 def get_huggingface_vectorstore() -> PGVector:
     return PGVector(
         connection=settings.database_url,
-        embeddings=embedding_snow,
+        embeddings=embedding,
         collection_name=settings.VECTOR_PDF_COLLECTION_NAME,
     )
 
@@ -51,7 +53,6 @@ def get_form_vectorstore() -> PGVector:
 
 # ── BM25 (키워드 검색) ─────────────────────────────────
 _bm25_retriever: BM25Retriever | None = None
-
 
 def get_bm25_retriever() -> BM25Retriever:
     """
