@@ -19,7 +19,7 @@ from langchain_community.tools.tavily_search import TavilySearchResults
 from app.infrastructure.config import settings
 
 _tavily = TavilySearchResults(
-    max_results=5,
+    max_results=3,
     tavily_api_key=settings.TAVILY_API_KEY,
     include_domains=[
         "bokjiro.go.kr",

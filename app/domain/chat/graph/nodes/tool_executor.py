@@ -45,8 +45,14 @@ async def tool_executor(state: ChatState) -> dict:
         return message, result
 
     # asyncio - 여러 비동기 작업을 동시에 실행하는 역할
-    # policy_search , web_search 동시 시작 
+    # policy_search , web_search 동시 시작
     outcomes = await asyncio.gather(*(run(call) for call in tool_calls))
+
+    for call, (_, result) in zip(tool_calls, outcomes):
+        print(f"------ TOOL RESULT [{call['name']}] ------")
+        print(f"args: {call['args']}")
+        print(result)
+        print("------------------------------------------")
 
     update = {
         "messages": [outcome[0] for outcome in outcomes],

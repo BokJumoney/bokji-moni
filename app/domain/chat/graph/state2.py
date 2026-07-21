@@ -7,6 +7,7 @@ messages는 add_messages 리듀서를 사용해 매 노드 호출마다 리스�
 tool_executor의 ToolMessage들이 여기 쌓인다).
 """
 
+from operator import add
 from typing import Annotated, TypedDict, NotRequired
 
 from langgraph.graph.message import add_messages
@@ -16,7 +17,9 @@ class ChatState(TypedDict):
     question: str                       # 사용자 원문 질문
     intent: str                         # intent_router 결과
     messages: Annotated[list, add_messages]  # Agent/Tool 메시지 누적
-    context: list[str]                  # tool_executor가 채우는 근거 텍스트
+    # add 리듀서로 누적: information_agent가 넣는 배경정보 요약과
+    # tool_executor가 넣는 문서 근거가 서로 덮어쓰지 않고 둘 다 쌓인다.
+    context: Annotated[list[str], add]  # 근거 텍스트(문서 + 사용자 배경정보 요약)
     answer: str                         # generate.py 최종 응답
     files: list[dict[str, str]]         # 신청서 다운로드 메타데이터
     user_id: NotRequired[str]
