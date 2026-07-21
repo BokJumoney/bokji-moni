@@ -10,8 +10,6 @@ welfare_policy_pdf_vector 벡터 컬렉션 검색기.
 import asyncio
 
 from app.infrastructure.vectorstore.setup_vectorstore import get_huggingface_vectorstore
-
-pdf_vectorstore = get_pdf_vectorstore()
 from fastapi.concurrency import run_in_threadpool
 from app.infrastructure.config import settings
 
