@@ -67,7 +67,7 @@ class UserRepository:
         )
         return list(self.session.exec(stmt).all())
 
-    def get_user_background(self, user_id: int) -> UserBackground:
+    def get_user_background(self, user_id: UUID) -> Optional[UserBackground]:
         stmt = select(UserBackground).where(UserBackground.user_id == user_id)
         return self.session.exec(stmt).first()
 

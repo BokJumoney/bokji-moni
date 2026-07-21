@@ -112,7 +112,7 @@ async def information_agent(state: ChatState) -> dict:
             SystemMessage(content=SYSTEM_PROMPT),
             *history_messages,
             HumanMessage(content=question),
-        ]
+        ]    
     )
 
     tool_calls = getattr(response, "tool_calls", None) or []

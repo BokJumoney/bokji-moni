@@ -29,19 +29,13 @@ async def compare_datas(repo:WelfareRepository, api_serv_ids_list: list) -> list
     #가져온 serv_id를 api에서 가져온 데이터와 비교
     expired_policy_list = []
     for db_serv_id in db_serv_ids_list:
-        if db_serv_id in api_serv_ids_list:
-            print("여전히 유지 중인 정책")
-        else:
+        if db_serv_id not in api_serv_ids_list:
             expired_policy_list.append(db_serv_id)
-            print("폐지된 정책")
 
     new_policy_list = []
     for api_serv_id in api_serv_ids_list:
-        if api_serv_id in db_serv_ids_list:
-            print("이미 진행 중인 정책")
-        else:
+        if api_serv_id not in db_serv_ids_list:
             new_policy_list.append(api_serv_id)
-            print("신규 정책")
 
     if not new_policy_list and not expired_policy_list:
         print("신규/폐지 정책 없음 - 업데이트 종료")
@@ -59,7 +53,7 @@ async def compare_datas(repo:WelfareRepository, api_serv_ids_list: list) -> list
 
     # 폐지/신규 반영이 모두 끝난 뒤, DB 전체 청크 기준으로 BM25 재빌드
     rebuild_bm25()
-    print("[BM25 리빌드 완료]")
+    print("[BM25 리빌드 완료]\n")
 
     return wp_list
 

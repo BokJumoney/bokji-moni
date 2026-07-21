@@ -43,7 +43,7 @@ def get_policy_vectorstore() -> PGVector:
 
 
 @lru_cache(maxsize=1)
-def get_huggingface_vectorstore() -> PGVector:
+def get_pdf_vectorstore() -> PGVector:
     """관리자가 업로드한 정책 PDF용 PGVector 컬렉션을 반환한다."""
     return PGVector(
         connection=settings.database_url,
