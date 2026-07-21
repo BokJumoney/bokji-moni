@@ -32,7 +32,7 @@ def parse_to_document( chunked_df:DataFrame ) -> list[Document]:
                 },
             )
         )
-    print(f"[new policy]생성된 청크 수: {len(documents)}\n")
+    print(f"[new policy]생성된 청크 수: {len(documents)}")
 
     return documents
 

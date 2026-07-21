@@ -75,7 +75,7 @@ async def information_agent(state: ChatState) -> dict:
     response = await _llm_with_tools.ainvoke(
         [SystemMessage(content=SYSTEM_PROMPT), HumanMessage(content=question)],
         config={
-            "configurer":
+            "configurable":
                 {
                     "messages": state.get("messages"),
                     "user_background": state.get("user_background"),
