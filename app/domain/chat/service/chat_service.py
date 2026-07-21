@@ -103,11 +103,16 @@ class ChatService:
             result = await graph.ainvoke(
                 {
                     "question": message,
-                    "user_id": str(user_id),
                     "user_info": user_info,
+                    "user_id": user_id,
                     "user_background": background,
                     "chat_history": chat_history,
-                }
+                },
+                config={
+                    "configurable": {
+                    "user_id": str(user_id),
+                    }
+                },
             )
             ai_content = result.get("answer", "")
             intent = result.get("intent", "General")

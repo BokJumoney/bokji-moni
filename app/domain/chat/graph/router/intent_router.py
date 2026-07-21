@@ -71,7 +71,7 @@ router_system = """
 class RouteQuery(BaseModel):
     datasource: Literal[
         "information_agent",
-        "subscription_agent",
+        "subscription_graph",
         "file_credential_agent",
     ] = Field(
         description=(
