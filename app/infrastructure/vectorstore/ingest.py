@@ -136,13 +136,27 @@ def ingest_to_pgvector(csv_path: str | None = None) -> int:
 
 
 def is_ingested() -> bool:
-    """PGVector 컬렉션에 문서가 존재하는지 확인."""
+    session: Session = next(get_session())
     try:
-        vectorstore = get_vectorstore(settings.VECTOR_COLLECTION_NAME)
-        results = vectorstore.similarity_search("복지", k=1)
-        return len(results) > 0
-    except Exception:
-        return False
+        # 최초 기동 시, PGVector 테이블 자체가 없는 것도 처리한다.
+        table = session.exec(text("SELECT to_regclass('langchain_pg_embedding')")).first()
+        if table is None or table[0] is None:
+            return False
+
+        sql = '''
+                SELECT 1
+                FROM langchain_pg_embedding e
+                JOIN langchain_pg_collection c ON e.collection_id = c.uuid
+                WHERE c.name = :collection_name
+                LIMIT 1
+        '''
+        row = session.exec(text(sql), params={"collection_name": settings.VECTOR_COLLECTION_NAME}).first()
+        if row is None:
+            return False
+        else:
+            return True
+    finally:
+        session.close()
 
 
 def ensure_ingested() -> None:

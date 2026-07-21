@@ -1,10 +1,8 @@
 from enum import Enum
 from typing import Literal
 
-from fastapi import APIRouter, Depends, File, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlmodel import Session
-
-from fastapi import APIRouter, Depends, File, Form, UploadFile, status
 
 from app.domain.admin.dto.response import FileListItemResponse, FileUploadResponse
 from app.domain.admin.service.admin_file_service import AdminFileService
@@ -16,7 +14,7 @@ from app.domain.user.dependencies import get_current_admin
 from app.domain.admin.dependancies import get_admin_service
 from pathlib import Path
 from app.infrastructure.db.connection import get_session
-from app.domain.welfare.service.rag_update import rag_update_service as rag_service
+from app.domain.welfare.service.rag_update.rag_update_service import api_call_rag_update
 
 router = APIRouter(
     prefix="/admin",
@@ -68,11 +66,15 @@ def get_uploaded_files(
 
     items = []
     for hwp_file, policy_name in admin_service.get_hwp_files():
-        stored_filename = f"{hwp_file.hwp_uuid.hex}.hwp"
+        stored_path = file_service.resolve_hwp_path(hwp_file.hwp_uuid)
+        stored_filename = (
+            stored_path.name if stored_path else f"{hwp_file.hwp_uuid.hex}.hwp"
+        )
         file_info = file_service.get_stored_file_info(stored_filename, "hwp")
         original_filename = hwp_file.origin_file_name
-        if Path(original_filename).suffix.lower() != ".hwp":
-            original_filename = f"{original_filename}.hwp"
+        if Path(original_filename).suffix.lower() not in file_service.HWP_EXTENSIONS:
+            extension = stored_path.suffix if stored_path else ".hwp"
+            original_filename = f"{original_filename}{extension}"
 
         items.append(
             FileListItemResponse(
@@ -133,9 +135,16 @@ async def upload_hwp_file(
     admin_file_service: AdminFileService = Depends(get_admin_file_service),
     admin_service: AdminService = Depends(get_admin_service),
 ) -> dict:
+    extension = Path(file.filename or "").suffix.lower()
+    if extension not in admin_file_service.HWP_EXTENSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="HWP 또는 HWPX 파일만 업로드할 수 있습니다.",
+        )
+
     # hwp파일 저장
     store_result = await admin_file_service.save_file(file)
-    origin_file_name = Path(store_result["originalFilename"]).stem
+    origin_file_name = Path(store_result["originalFilename"]).name
     file_uuid = Path(store_result["storedFilename"]).stem
     # DB 저장 로직(uuid 이름, 원본 파일 이름)
     admin_service.save_hwp_form(service_id, origin_file_name, file_uuid)
@@ -154,5 +163,5 @@ async def upload_hwp_file(
 
 @router.get("/api_call", tags=[Tags.ADMIN])
 async def rag_api_call(session: Session = Depends(get_session)):
-    wp_list = await rag_service.api_call_rag_update(session)
+    wp_list = await api_call_rag_update(session)
     return wp_list

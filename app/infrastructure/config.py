@@ -32,10 +32,11 @@ class Settings(BaseSettings):
     # pgvector / Vectorstore 초기 데이터
     VECTOR_COLLECTION_NAME: str = "welfare_policy_vector"
     VECTOR_EMBEDDING_MODEL: str = "text-embedding-3-small"
-    VECTOR_EMBEDDING_MODEL_SNOW: str = "dragonkue/snowflake-arctic-embed-l-v2.0-ko"
+    VECTOR_EMBEDDING_DIMENSION: int = 1536
 
     # PDF 벡터
     VECTOR_PDF_COLLECTION_NAME: str = "welfare_policy_pdf_vector"
+    VECTOR_FORM_COLLECTION_NAME: str = "welfare_forms"
 
     # CSV 적재
     WELFARE_CSV_PATH: str = "data/welfare_policy_details.csv"
@@ -50,6 +51,12 @@ class Settings(BaseSettings):
     SESSION_ABSOLUTE_HOURS: int = 24
     SESSION_TOUCH_INTERVAL_SECONDS: int = 300
 
+    #알림 e-mail 발송
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_SENDER: str = ""
+    SMTP_APP_PASSWORD: str = ""
+    EMAIL_BACKEND: str = "console"
 
     # CORS 허용 origin
     ALLOWED_ORIGINS: list[str] = [

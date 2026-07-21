@@ -5,7 +5,7 @@ from langchain_core.output_parsers import JsonOutputParser
 #LLM 기반 신청서 구조화: 비정형 신청서 → 검색 가능한 구조 데이터 변환 단계
 
 model = ChatOpenAI(
-    model="gpt-4o-mini",
+    model="gpt-5.6-terra",
     temperature=0
 )
 
