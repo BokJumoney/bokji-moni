@@ -43,10 +43,18 @@ def init_sqlmodel_table(df: DataFrame) -> list[dict]:
     wp_list: list[dict] = []
     try:
         for _, row in df.iterrows():
-            session.add(WelfarePolicy(
-                service_id=row["서비스ID"],
-                service_name=row["서비스명"],
-            ))
+            session.add(
+                WelfarePolicy(
+                    service_id=row["서비스ID"],
+                    service_name=row["서비스명"],
+                    service_depart=row["소관부처명"],
+                    service_summary=row["서비스요약"],
+                    service_benefit=row["급여서비스내용"],
+                    service_target_detail=row["대상자상세내용"],
+                    homepage_list=row["홈페이지목록"],
+                    contact=row["문의처"],
+                )
+            )
             # 이메일 전송 그래프로 갈 신규 복지 정책 리스트
             policy = {
                 "service_id": row["서비스ID"],

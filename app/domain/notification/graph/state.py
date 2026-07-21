@@ -6,12 +6,13 @@ class EmailPromptRoute(str, Enum):
     NEW_POLICY = "new_policy"
     APPLY_START = "apply_start"
     APPLY_END = "apply_end"
+    REMIND_POLICY = "remind_policy"  # 구독 후 7일차 리마인더
 
 class NotiState(TypedDict):
     # 정책 정보
     new_policies: List[dict]
 
-    noti_type: EmailPromptRoute # 신규(new) / 시작 전(start) / 마감 전(end) 기본값 = 신규
+    noti_type: EmailPromptRoute # 신규(new) / 시작 전(start) / 마감 전(end) / 리마인드(remind) 기본값 = 신규
 
     #e-mail 발송 대상 유저 정보
     user_names: List[str]

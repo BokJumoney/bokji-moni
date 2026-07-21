@@ -9,7 +9,6 @@ def send_email(state:NotiState):
 
     sender = get_email_sender()
 
-
     for email, name in zip(emails, names):
         try:
             personal_email = name + "님, " + email_content

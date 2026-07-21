@@ -32,6 +32,10 @@ class WelfareRepository:
         stmt = select(WelfarePolicy).where(WelfarePolicy.service_id == service_id)
         return self.session.exec(stmt).first()
 
+    def get_by_service_ids(self, service_ids: list[str]) -> Optional[list[WelfarePolicy]]:
+        stmt = select(WelfarePolicy).where(col(WelfarePolicy.service_id).in_(service_ids))
+        return self.session.exec(stmt).all()
+
     def get_service_id(self) -> Optional[str]:
         stmt = select(WelfarePolicy.service_id)
         return list(self.session.exec(stmt).all())

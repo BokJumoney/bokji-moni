@@ -58,6 +58,9 @@ class Settings(BaseSettings):
     SMTP_APP_PASSWORD: str = ""
     EMAIL_BACKEND: str = "console"
 
+    REMINDER_DEMO_DELAY_SECONDS: int = 90
+    REMINDER_AFTER_DAYS: int = 7
+
     # CORS 허용 origin
     ALLOWED_ORIGINS: list[str] = [
         "http://localhost:3000",

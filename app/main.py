@@ -10,6 +10,7 @@ from app.domain.admin.api.admin_router import router as admin_router
 from app.domain.admin.api.admin_policy import router as admin_policy_router
 from app.domain.subscription.api.subscription_router import router as subscription_router
 from app.infrastructure.config import settings
+from app.infrastructure.scheduler import create_scheduler
 
 
 @asynccontextmanager
@@ -24,9 +25,15 @@ async def lifespan(app: FastAPI):
     print("------ Vectorstore 적재 확인 ------")
     ensure_ingested()
 
+    print("알림 스케쥴러 기동")
+    scheduler = create_scheduler()
+    scheduler.start()
+
     yield
 
     # 종료 시: 리소스 정리 (필요시)
+    scheduler.shutdown()
+    print("스케쥴러 종료")
     print("------ 서버 종료 ------")
 
 

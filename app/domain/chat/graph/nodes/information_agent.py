@@ -67,13 +67,14 @@ def _build_recommendation_query(question: str, background: dict) -> str:
         parts.append("장애인")
     return " ".join(parts)
 
- """배경정보를 답변에 그대로 인용할 수 있는 자연어 문장으로 만든다.
+"""
+배경정보를 답변에 그대로 인용할 수 있는 자연어 문장으로 만든다.
 
-    LLM(tool_call 생성 시 content가 비는 경우가 많음)에 맡기지 않고
-    여기서 직접 문장을 만들어 state.context에 넣는다. generate.py가
-    이 텍스트를 다른 근거 문서와 함께 보고 답변 앞부분에 자연스럽게
-    녹여 쓴다.
-    """
+LLM(tool_call 생성 시 content가 비는 경우가 많음)에 맡기지 않고
+여기서 직접 문장을 만들어 state.context에 넣는다. generate.py가
+이 텍스트를 다른 근거 문서와 함께 보고 답변 앞부분에 자연스럽게
+녹여 쓴다.
+"""
 
 def _describe_background(background: dict) -> str:
    

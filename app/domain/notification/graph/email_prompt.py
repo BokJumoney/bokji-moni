@@ -2,7 +2,9 @@ from app.domain.notification.graph.state import EmailPromptRoute
 
 COMMON_PROMPT = f"""
     우리 서비스 이용자들에게 보낼 e-mail 제목과 본문 작성해줘. 제목, 본문에 서비스ID는 넣지마.
-    Markdown쓰지말고 일반 텍스트로 작성해줘. 적절한 기호는 사용해도 상관없어. 적절한 들여쓰기도 해줘.
+    Markdown쓰지말고 일반 텍스트로 작성해줘.
+    적절한 들여쓰기도 해줘. 기호는 사용해도 상관없지만 과하면 안돼.
+    본문에서 제목처럼 쓰이는 정책명은 []로 감싸서 강조해줘.
     이메일 작성에 필요한 정보가 부족하면 web_search_tool로 검색해서 보강해.
     특히 신청기간에 대한 정보가 없으면 web_search_tool을 적극적으로 사용해.
     이미 알고있는 정보에 대해서는 검색하지마.
@@ -20,12 +22,12 @@ NEW_POLICIES_PROMPT = f"""
         정책이 여러 개 일 수 있으니, 영역을 구분해서 작성해야해.
 """
 
-INDV_POLICY_START_PROMPT = f"""
+INDV_POLICY_START_PROMPT = """
         제목은
         "[복지모니 정책 알림 - 정책명:"정책명"]" 뒤에 이어서 간단하게 작성해줘.
         본문은
         "안녕하세요.
-        복지 정책 알림 서비스, "복지모니"입니다. 알림 구독하신 "정책명" 정책 신청일이 3일 앞으로 다가와 안내드립니다." 로 시작해줘.
+        복지 정책 알림 서비스, "복지모니"입니다. 알림 구독하신 {정책명} 정책 신청일이 3일 앞으로 다가와 안내드립니다." 로 시작해줘.
 """
 
 INDV_POLICY_END_PROMPT = f"""
@@ -33,7 +35,16 @@ INDV_POLICY_END_PROMPT = f"""
         "[복지모니 정책 알림 - 정책명:"정책명"]" 뒤에 이어서 간단하게 작성해줘.
         본문은
         "안녕하세요.
-        복지 정책 알림 서비스, "복지모니"입니다. 알림 구독하신 "정책명" 정책 신청 마감일이 3일 밖에 남지 않아 다시 안내드립니다." 로 시작해줘.
+        복지 정책 알림 서비스, "복지모니"입니다. 알림 구독하신 [정책명] 정책 신청 마감일이 3일 밖에 남지 않아 다시 안내드립니다." 로 시작해줘.
+"""
+
+INDV_POLICY_REMIND_PROMPT = """
+        제목은
+        "[복지모니 정책 알림 - 정책명:"정책명"]" 뒤에 이어서 간단하게 작성해줘.
+        본문은
+        "안녕하세요.
+        복지 정책 알림 서비스, "복지모니"입니다. 알림 구독하신 [정책명] 정책은 잊지 않고 신청하셨나요?" 로 시작해줘.
+        뒤로는 복지 정책에 대한 매우 간단한 정보와 함께 꼭 신청하라는 신청 유도 멘트도 넣어줘.
 """
 
 WRITE_PROMPT = """
@@ -90,4 +101,5 @@ PROMPT_MAP = {
     EmailPromptRoute.NEW_POLICY: NEW_POLICIES_PROMPT,
     EmailPromptRoute.APPLY_START: INDV_POLICY_START_PROMPT,
     EmailPromptRoute.APPLY_END: INDV_POLICY_END_PROMPT,
+    EmailPromptRoute.REMIND_POLICY: INDV_POLICY_REMIND_PROMPT,
 }

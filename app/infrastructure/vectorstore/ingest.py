@@ -31,6 +31,7 @@ def read_csv_and_split_text( csv_path: str ) -> list[Document]:
     """
     print(f"CSV 읽기: {csv_path} ------")
     df = pd.read_csv(csv_path, encoding="utf-8-sig")
+    df = df.fillna("")
     documents: list[Document] = []
 
     #청킹 전에 RDB 적재
@@ -95,6 +96,12 @@ def _init_sqlmodel_table(df: DataFrame) -> None:
             session.add(WelfarePolicy(
                 service_id=row["서비스ID"],
                 service_name=row["서비스명"],
+                service_depart=row["소관부처명"],
+                service_summary=row["서비스요약"],
+                service_benefit=row["급여서비스내용"],
+                service_target_detail=row["대상자상세내용"],
+                homepage_list=row["홈페이지목록"],
+                contact=row["문의처"],
             ))
         session.commit()
         print(f"SQLModel 동기화 완료: {len(df)}행")

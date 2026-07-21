@@ -14,3 +14,10 @@ class WelfarePolicy(SQLModel, table=True):
 
     service_id: str = Field(default=None, primary_key=True)
     service_name: str = Field(index=True)
+
+    service_depart: Optional[str] = None
+    service_summary: Optional[str] = None
+    service_benefit: Optional[str] = None
+    service_target_detail: Optional[str] = None
+    homepage_list: Optional[str] = None
+    contact: Optional[str] = None

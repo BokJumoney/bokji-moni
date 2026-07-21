@@ -6,6 +6,7 @@ rollback은 애플리케이션 서비스가 담당한다. 모든 개인 데이�
 """
 
 import uuid
+from datetime import date, time, datetime, timedelta
 from typing import Optional
 
 from sqlalchemy import case, func, or_
@@ -161,3 +162,13 @@ class SubscriptionRepository:
             .limit(limit)
         )
         return list(self.session.exec(statement).all())
+
+
+    def find_subscription_by_created_on(self, target_date: date) -> list[PolicySubscription]:
+
+            start = datetime.combine(target_date, time.min)
+            end = start + timedelta(days=1)
+
+            stmt = select(PolicySubscription).where(PolicySubscription.created_at >= start, PolicySubscription.created_at < end)
+
+            return list(self.session.exec(stmt).all())

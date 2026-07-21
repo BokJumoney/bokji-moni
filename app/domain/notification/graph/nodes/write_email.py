@@ -12,7 +12,7 @@ from app.domain.notification.graph.state import NotiState, EmailPromptRoute
 from langchain_core.messages import HumanMessage
 from app.infrastructure.llm.gpt import get_llm_gpt
 
-model = get_llm_gpt("gpt-5.6-luna", 0, reasoning_effort=None, use_responses_api=True)
+model = get_llm_gpt("gpt-4o-mini", 0, reasoning_effort=None, use_responses_api=True)
 
 
 class WriteEmailForm(BaseModel):

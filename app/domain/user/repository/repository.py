@@ -9,7 +9,7 @@ from datetime import timedelta
 from typing import Optional
 from uuid import UUID
 
-from sqlmodel import Session, select
+from sqlmodel import Session, select, col
 from app.common.timezone import now_kst
 from app.domain.user.entity.models import AuthSession, User, UserBackground
 
@@ -27,6 +27,10 @@ class UserRepository:
     def get_by_id(self, user_id) -> Optional[User]:
         stmt = select(User).where(User.id == user_id)
         return self.session.exec(stmt).first()
+
+    def get_user_by_ids(self, user_ids: list[str]):
+        stmt = select(User).where(col(User.id).in_(user_ids))
+        return self.session.exec(stmt).all()
 
     def get_by_id_for_update(self, user_id) -> Optional[User]:
         """알림 설정 변경이 끝날 때까지 사용자 행을 잠근다."""
@@ -70,7 +74,6 @@ class UserRepository:
     def get_user_background(self, user_id: UUID) -> Optional[UserBackground]:
         stmt = select(UserBackground).where(UserBackground.user_id == user_id)
         return self.session.exec(stmt).first()
-
 
 class AuthSessionRepository:
     """auth_sessions 테이블 DB 접근."""

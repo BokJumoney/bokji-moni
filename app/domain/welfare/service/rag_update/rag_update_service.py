@@ -65,7 +65,7 @@ async def api_call_rag_update(session:Session) -> list:
     #신규 정책 알림 이메일 전송 그래프 호출
     if wp_list:
         try:
-            send_result = await send_new_policy_email(session, wp_list)
+            send_result = await send_new_policy_email(wp_list)
         except Exception as e:
             print(e, "이메일 발송에 실패했습니다.")
 
